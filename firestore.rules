@@ -15,28 +15,16 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.admin == true; 
     }
 
-    function hasServerTimestamp() {
-      return request.resource.data.createdAt is timestamp;
-    }
-
-    function isValidTimesheet() {
-      let data = request.resource.data;
-      return data.userId is string
-        && data.clockIn is timestamp
-        && data.type is string
-        && (data.type == 'hourly' || data.type == 'field')
-        && hasServerTimestamp();
-    }
-
     // ========== Timesheets Collection ==========
     match /timesheets/{id} {
       // Read: owner or admin
       allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
       
-      // Create: must be owner or admin, with valid data
+      // Create: must be owner or admin, basic validation
       allow create: if isSignedIn() 
         && (isAdmin() || request.resource.data.userId == request.auth.uid)
-        && isValidTimesheet();
+        && request.resource.data.userId is string
+        && request.resource.data.type in ['hourly', 'field'];
       
       // Update: only admin or owner, cannot change userId
       allow update: if isSignedIn() 
@@ -55,8 +43,7 @@ service cloud.firestore {
       // Write: admin only, must have valid structure
       allow create, update: if isAdmin()
         && request.resource.data.label is string
-        && request.resource.data.rateJPY is number
-        && hasServerTimestamp();
+        && request.resource.data.rateJPY is number;
       
       // Delete: admin only
       allow delete: if isAdmin();
