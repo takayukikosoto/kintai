@@ -533,18 +533,41 @@ export default function AdminTimesheetView({ userId }: AdminTimesheetViewProps) 
                 </tr>
               </thead>
               <tbody>
-                {sortedHistory.map((h, idx) => (
-                  <tr 
-                    key={h.id}
-                    style={{ 
-                      borderBottom: '1px solid #f7fafc',
-                      background: idx % 2 === 0 ? 'white' : '#fafbfc'
-                    }}
-                  >
-                    <td style={{ padding: '10px 8px' }}>
-                      <div style={{ fontSize: '0.9rem' }}>{jst(h.clockIn).split(' ')[0]}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#718096' }}>{jst(h.clockIn).split(' ')[1]}</div>
-                    </td>
+                {sortedHistory.map((h, idx) => {
+                  // 今日の日付かチェック
+                  const entryDate = jst(h.clockIn).split(' ')[0]
+                  const today = new Date().toLocaleDateString('ja-JP', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit' 
+                  }).replace(/\//g, '-')
+                  const isToday = entryDate === today
+
+                  return (
+                    <tr 
+                      key={h.id}
+                      style={{ 
+                        borderBottom: '1px solid #f7fafc',
+                        background: isToday 
+                          ? 'linear-gradient(135deg, #fff5f5 0%, #fffaf0 100%)'
+                          : idx % 2 === 0 ? 'white' : '#fafbfc',
+                        borderLeft: isToday ? '4px solid #f56565' : 'none',
+                        boxShadow: isToday ? '0 2px 8px rgba(245, 101, 101, 0.15)' : 'none'
+                      }}
+                    >
+                      <td style={{ padding: '10px 8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {isToday && <span style={{ fontSize: '1rem' }}>📍</span>}
+                          <div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: isToday ? '600' : 'normal' }}>
+                              {entryDate}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: '#718096' }}>
+                              {jst(h.clockIn).split(' ')[1]}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
                     <td style={{ padding: '10px 8px' }}>
                       <div style={{ fontWeight: '500', fontSize: '0.9rem' }}>
                         {userMap.get(h.userId)?.name || userMap.get(h.userId)?.email?.split('@')[0] || h.userId.slice(0, 8)}
@@ -587,7 +610,8 @@ export default function AdminTimesheetView({ userId }: AdminTimesheetViewProps) 
                       ¥{(h.payJPY || 0).toLocaleString()}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

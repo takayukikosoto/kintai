@@ -150,21 +150,41 @@ export default function TimesheetHistory({ userId, isAdmin = false }: TimesheetH
                 </tr>
               </thead>
               <tbody>
-                {history.map((h, idx) => (
-                  <tr 
-                    key={h.id}
-                    style={{ 
-                      borderBottom: '1px solid #f7fafc',
-                      background: idx % 2 === 0 ? 'white' : '#f7fafc'
-                    }}
-                  >
-                    <td style={{ padding: '12px 8px', fontSize: '0.9rem' }}>
-                      {jst(h.clockIn).split(' ')[0]}
-                      <br />
-                      <span style={{ fontSize: '0.8rem', color: '#718096' }}>
-                        {jst(h.clockIn).split(' ')[1]}
-                      </span>
-                    </td>
+                {history.map((h, idx) => {
+                  // 今日の日付かチェック
+                  const entryDate = jst(h.clockIn).split(' ')[0]
+                  const today = new Date().toLocaleDateString('ja-JP', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit' 
+                  }).replace(/\//g, '-')
+                  const isToday = entryDate === today
+
+                  return (
+                    <tr 
+                      key={h.id}
+                      style={{ 
+                        borderBottom: '1px solid #f7fafc',
+                        background: isToday 
+                          ? 'linear-gradient(135deg, #fff5f5 0%, #fffaf0 100%)'
+                          : idx % 2 === 0 ? 'white' : '#f7fafc',
+                        borderLeft: isToday ? '4px solid #f56565' : 'none',
+                        boxShadow: isToday ? '0 2px 8px rgba(245, 101, 101, 0.15)' : 'none'
+                      }}
+                    >
+                      <td style={{ padding: '12px 8px', fontSize: '0.9rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {isToday && <span style={{ fontSize: '1rem' }}>📍</span>}
+                          <div>
+                            <div style={{ fontWeight: isToday ? '600' : 'normal' }}>
+                              {entryDate}
+                            </div>
+                            <span style={{ fontSize: '0.8rem', color: '#718096' }}>
+                              {jst(h.clockIn).split(' ')[1]}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
                     {isAdmin && (
                       <td style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#4a5568' }}>
                         {h.userId?.slice(0, 8)}...
@@ -202,7 +222,8 @@ export default function TimesheetHistory({ userId, isAdmin = false }: TimesheetH
                       ¥{(h.payJPY || 0).toLocaleString()}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
