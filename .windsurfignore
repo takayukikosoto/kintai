@@ -1,0 +1,42 @@
+# Files and directories to exclude from Windsurf context to avoid UTF-8 marshal errors
+# Large dependency bundles / binaries often contain non-UTF-8 bytes.
+
+node_modules/
+functions/node_modules/
+.git/
+dist/
+.vite/
+build/
+.next/
+coverage/
+**/.DS_Store
+
+# Static assets (images, fonts, media)
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.svg
+**/*.ico
+**/*.webp
+**/*.bmp
+**/*.tiff
+**/*.mp4
+**/*.mov
+**/*.mkv
+
+# Fonts & binaries
+**/*.woff*
+**/*.eot
+**/*.ttf
+**/*.otf
+**/*.zip
+**/*.pdf
+**/*.db
+
+# Logs
+**/*.log
+
+# Chat logs and debug files (may contain mixed encodings)
+Firebase Project Setup and Debugging.md
+localhost-*.log
