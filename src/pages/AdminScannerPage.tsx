@@ -158,7 +158,7 @@ export default function AdminScannerPage() {
   return (
     <div>
       <div className="card">
-        <h2>📷 QRスキャナー（管理者専用）</h2>
+        <h2>📷 QRスキャナー</h2>
         
         <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
