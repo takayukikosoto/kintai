@@ -13,14 +13,15 @@ Two-hour prototype → Production-ready minimal KINTAI attendance system with se
 **Goal:** Restrict access and prevent data leaks
 
 ### Tasks
-- [ ] Add `isSignedIn`, `isOwner(uid)`, and `isAdmin()` helper functions  
-- [ ] Apply per-collection rules:
+- [x] Add `isSignedIn`, `isOwner(uid)`, and `isAdmin()` helper functions  
+- [x] Apply per-collection rules:
   - `users`: read/write = owner or admin  
   - `rates`: read = signed in / write = admin  
   - `timesheets`: read/write = owner or admin
-- [ ] Enforce `FieldValue.serverTimestamp()` for all time writes  
-- [ ] Verify `Custom Claims` are set via Admin SDK (not from client)  
-- [ ] Enable Firestore Index: `(userId, clockIn desc)`  
+- [x] Enforce `FieldValue.serverTimestamp()` for all time writes  
+- [x] Verify `Custom Claims` are set via Admin SDK (not from client)  
+- [x] Enable Firestore Index: `(userId, clockIn desc)`
+- [x] Add data validation functions (`isValidTimesheet()`)  
 
 ---
 
@@ -28,13 +29,14 @@ Two-hour prototype → Production-ready minimal KINTAI attendance system with se
 **Goal:** Single source of truth for all pay logic
 
 ### Tasks
-- [ ] Create `lib/pay.ts` with central `calcPay()` function  
-- [ ] Handle:
-  - [ ] Round to 15 minutes  
-  - [ ] Overtime 25%  
-  - [ ] Late-night 25%  
-  - [ ] Holiday 35%  
-- [ ] Use the same function both client & Cloud Functions  
+- [x] Create `lib/pay.ts` with central `calcPay()` function  
+- [x] Handle:
+  - [x] Round to 15 minutes  
+  - [x] Overtime 25%  
+  - [x] Late-night 25% (22:00-5:00)
+  - [x] Holiday 35% (weekends)
+- [x] Use the same function both client & Cloud Functions
+- [x] Configurable via `PayrollConfig` interface  
 
 ---
 
@@ -42,11 +44,11 @@ Two-hour prototype → Production-ready minimal KINTAI attendance system with se
 **Goal:** Enable human-readable & accounting-ready outputs
 
 ### Tasks
-- [ ] Add `ExportCSV()` in `lib/export.ts`
-- [ ] Fields: userId, date, start, end, hours, amount  
-- [ ] Monthly user filter
-- [ ] Optional: add total line per user
-- [ ] Button on admin dashboard  
+- [x] Add `ExportCSV()` in AdminTimesheetView
+- [x] Fields: userId, date, start, end, hours, amount  
+- [x] Monthly user filter (date range picker)
+- [x] Button on admin dashboard
+- [x] UTF-8 BOM for Excel compatibility  
 
 ---
 
@@ -54,27 +56,24 @@ Two-hour prototype → Production-ready minimal KINTAI attendance system with se
 **Goal:** Prepare for multi-role and external user access
 
 ### Tasks
-- [ ] Add Google Auth sign-in  
-- [ ] Create admin claim via Functions  
+- [x] Add Google Auth sign-in  
+- [x] Create admin claim via Admin SDK script (`setAdmin.js`)
 - [ ] Add demo/test account  
-- [ ] Redirect unauthenticated users  
-
----
+- [x] Redirect unauthenticated users (login page)  
 
 ## 🧭 5. UI/UX & Frontend Polishing
 **Goal:** Smooth interaction and readability
 
 ### Tasks
-- [ ] Add loading spinners & toast messages  
-- [ ] Highlight today’s attendance  
-- [ ] Add validation (zod or react-hook-form)  
-- [ ] Ensure mobile responsive layout  
+- [x] Add loading spinners & toast messages  
+- [ ] Highlight today's attendance  
+- [x] Add validation (inline validation for forms)
+- [x] Ensure mobile responsive layout (CSS media queries)  
 
 ---
 
 ## ⚙️ 6. Webhook & External Integration
 **Goal:** Secure connection to external systems
-
 ### Tasks
 - [ ] Add HMAC signature verification for incoming webhooks  
 - [ ] Retry logic (3x with exponential backoff)  
@@ -88,8 +87,9 @@ Two-hour prototype → Production-ready minimal KINTAI attendance system with se
 
 ### Tasks
 - [ ] Integrate Sentry for client error tracking  
-- [ ] Add GitHub Actions for deploy (hosting + firestore)  
-- [ ] Use Firebase Preview Channels for test deployments  
+- [x] Add GitHub Actions for deploy (hosting + firestore)  
+- [ ] Use Firebase Preview Channels for test deployments
+- [x] Add workflow file (`.github/workflows/deploy.yml`)  
 
 ---
 

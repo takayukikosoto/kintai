@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
+import { showToast } from './Toast'
 
 interface UserSettingsProps {
   userId: string
@@ -27,16 +28,32 @@ export default function UserSettings({ userId, userEmail, onDefaultRateChange }:
   }, [userId, onDefaultRateChange])
 
   async function save() {
-    const docRef = doc(db, 'users', userId)
-    await setDoc(docRef, {
-      name,
-      email: userEmail,
-      defaultRate,
-      updatedAt: new Date().toISOString()
-    }, { merge: true })
-    setSaved(true)
-    onDefaultRateChange(defaultRate)
-    setTimeout(() => setSaved(false), 3000)
+    // バリデーション
+    if (!name.trim()) {
+      showToast('名前を入力してください', 'warning')
+      return
+    }
+    if (defaultRate <= 0) {
+      showToast('有効な時給を入力してください', 'warning')
+      return
+    }
+
+    try {
+      const docRef = doc(db, 'users', userId)
+      await setDoc(docRef, {
+        name,
+        email: userEmail,
+        defaultRate,
+        updatedAt: new Date().toISOString()
+      }, { merge: true })
+      setSaved(true)
+      onDefaultRateChange(defaultRate)
+      showToast('設定を保存しました', 'success')
+      setTimeout(() => setSaved(false), 3000)
+    } catch (error) {
+      console.error('保存エラー:', error)
+      showToast('保存に失敗しました', 'error')
+    }
   }
 
   return (

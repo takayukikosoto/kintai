@@ -47,36 +47,49 @@ export default function ClockCard({ userId, defaultRate, hideTitle = false }: Cl
   }, [userId])
 
   async function clockIn() {
-    const entry: TimesheetEntry = {
-      userId,
-      type: 'hourly',
-      clockIn: nowIsoUtc(),
-      clockOut: null as any,
-      breaksMinutes: 0,
-      hourlyRate: rate,
-      createdAt: nowIsoUtc(),
-      updatedAt: nowIsoUtc()
+    try {
+      const entry: TimesheetEntry = {
+        userId,
+        type: 'hourly',
+        clockIn: nowIsoUtc(),
+        clockOut: null as any,
+        breaksMinutes: 0,
+        hourlyRate: rate,
+        createdAt: nowIsoUtc(),
+        updatedAt: nowIsoUtc()
+      }
+      const ref = await addDoc(collection(db, 'timesheets'), {
+        ...entry,
+        clockOut: null,
+        _ts: serverTimestamp()
+      })
+      setActive({ ...entry, id: ref.id })
+      showToast('出勤しました！', 'success')
+    } catch (error) {
+      console.error('出勤エラー:', error)
+      showToast('出勤に失敗しました', 'error')
     }
-    const ref = await addDoc(collection(db, 'timesheets'), {
-      ...entry,
-      clockOut: null,
-      _ts: serverTimestamp()
-    })
-    setActive({ ...entry, id: ref.id })
   }
 
   async function clockOut() {
     if (!active?.id) return
-    const final = compute({
-      ...active,
-      clockOut: nowIsoUtc(),
-      breaksMinutes: breaks
-    })
-    await updateDoc(doc(db, 'timesheets', active.id), {
-      ...final,
-      _ts: serverTimestamp()
-    })
-    setActive(null)
+    try {
+      const final = compute({
+        ...active,
+        clockOut: nowIsoUtc(),
+        breaksMinutes: breaks
+      })
+      await updateDoc(doc(db, 'timesheets', active.id), {
+        ...final,
+        _ts: serverTimestamp()
+      })
+      setActive(null)
+      setBreaks(0)
+      showToast(`退勤しました！支給額: ¥${final.payJPY?.toLocaleString()}`, 'success')
+    } catch (error) {
+      console.error('退勤エラー:', error)
+      showToast('退勤に失敗しました', 'error')
+    }
   }
 
   return (
