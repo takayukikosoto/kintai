@@ -9,6 +9,8 @@ import MyPage from './pages/MyPage'
 import AdminScannerPage from './pages/AdminScannerPage'
 import AdminRatesPage from './pages/AdminRatesPage'
 import AdminUsersPage from './pages/AdminUsersPage'
+import { ToastContainer } from './components/Toast'
+import Loading from './components/Loading'
 
 export default function App() {
   const { user, loading, isAdmin, signInGoogle, signOut, registerEmail, signInEmail } = useAuth()
@@ -18,7 +20,7 @@ export default function App() {
   const [error, setError] = useState<string>('')
   const [authLoading, setAuthLoading] = useState(false)
 
-  if (loading) return <div className="auth-container"><div className="auth-card">読み込み中…</div></div>
+  if (loading) return <Loading fullscreen message="認証情報を確認中..." />
 
   if (!user) {
     const handleSignIn = async () => {
@@ -169,6 +171,7 @@ export default function App() {
           } />
         </Routes>
       </div>
+      <ToastContainer />
     </Router>
   )
 }

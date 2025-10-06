@@ -2,25 +2,74 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() { return request.auth != null; }
-    function isOwner(uid) { return request.auth != null && request.auth.uid == uid; }
-    function isAdmin() { return request.auth.token.admin == true; }
+    // ========== Helper Functions ==========
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+    
+    function isOwner(uid) { 
+      return request.auth != null && request.auth.uid == uid; 
+    }
+    
+    function isAdmin() { 
+      return request.auth != null && request.auth.token.admin == true; 
+    }
 
+    function hasServerTimestamp() {
+      return request.resource.data.createdAt is timestamp;
+    }
+
+    function isValidTimesheet() {
+      let data = request.resource.data;
+      return data.userId is string
+        && data.clockIn is timestamp
+        && data.type is string
+        && (data.type == 'hourly' || data.type == 'field')
+        && hasServerTimestamp();
+    }
+
+    // ========== Timesheets Collection ==========
     match /timesheets/{id} {
+      // Read: owner or admin
       allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
-      allow create: if isSignedIn() && (isAdmin() || request.resource.data.userId == request.auth.uid);
-      allow update: if isSignedIn() && (isAdmin() || isOwner(resource.data.userId));
+      
+      // Create: must be owner or admin, with valid data
+      allow create: if isSignedIn() 
+        && (isAdmin() || request.resource.data.userId == request.auth.uid)
+        && isValidTimesheet();
+      
+      // Update: only admin or owner, cannot change userId
+      allow update: if isSignedIn() 
+        && (isAdmin() || isOwner(resource.data.userId))
+        && request.resource.data.userId == resource.data.userId;
+      
+      // Delete: admin only
       allow delete: if isAdmin();
     }
 
+    // ========== Rates Collection ==========
     match /rates/{id} {
+      // Read: all signed-in users
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      
+      // Write: admin only, must have valid structure
+      allow create, update: if isAdmin()
+        && request.resource.data.label is string
+        && request.resource.data.rateJPY is number
+        && hasServerTimestamp();
+      
+      // Delete: admin only
+      allow delete: if isAdmin();
     }
 
+    // ========== Users Collection ==========
     match /users/{uid} {
+      // Read: owner or admin
       allow read: if isOwner(uid) || isAdmin();
-      allow write: if isOwner(uid) || isAdmin();
+      
+      // Write: owner or admin, cannot change uid field if exists
+      allow write: if (isOwner(uid) || isAdmin())
+        && (!request.resource.data.keys().hasAny(['uid']) || request.resource.data.uid == uid);
     }
   }
 }
