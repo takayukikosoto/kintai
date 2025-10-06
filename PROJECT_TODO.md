@@ -66,7 +66,7 @@ Two-hour prototype → Production-ready minimal KINTAI attendance system with se
 
 ### Tasks
 - [x] Add loading spinners & toast messages  
-- [ ] Highlight today's attendance  
+- [x] Highlight today's attendance (📍マーカー、グラデーション背景)
 - [x] Add validation (inline validation for forms)
 - [x] Ensure mobile responsive layout (CSS media queries)  
 
