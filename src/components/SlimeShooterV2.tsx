@@ -51,6 +51,7 @@ interface Particle {
 interface SlimeShooterV2Props {
   onGameEnd: (score: number) => void
   onClose: () => void
+  mode?: 'normal' | 'practice' | 'infinite'  // normal: 本番, practice: 練習, infinite: 無限
 }
 
 // ========== ユーティリティ関数 ==========
@@ -64,15 +65,17 @@ const easeInOutQuad = (t: number) =>
   t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
 
 // ========== メインコンポーネント ==========
-export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Props) {
+export default function SlimeShooterV2({ onGameEnd, onClose, mode = 'normal' }: SlimeShooterV2Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [gameState, setGameState] = useState<'ready' | 'aiming' | 'shooting' | 'ended'>('ready')
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
-  const [attemptsLeft, setAttemptsLeft] = useState(3)
+  const [attemptsLeft, setAttemptsLeft] = useState(mode === 'infinite' ? 999 : 3)
   const [dragStart, setDragStart] = useState<Vector2 | null>(null)
   const [dragCurrent, setDragCurrent] = useState<Vector2 | null>(null)
   const [selectedProjectile, setSelectedProjectile] = useState<ProjectileType>('slime')
+  
+  const isInfiniteMode = mode === 'infinite'
   
   // Refs for game state
   const projectileRef = useRef({
@@ -475,24 +478,65 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
         }
       })
       
-      // Out of bounds check
-      if (slime.y < -50 || slime.x < -50 || slime.x > CANVAS_WIDTH + 50 || slime.y > CANVAS_HEIGHT + 50) {
-        slime.active = false
-        slime.x = SLIME_START_X
-        slime.y = SLIME_START_Y
-        slime.vx = 0
-        slime.vy = 0
-        slime.scaleX = 1
-        slime.scaleY = 1
-        slime.rotation = 0
-        slime.trail = []
-        setGameState('ready')
+      // 壁との衝突判定（無限モードのみ跳ね返り、通常モードは画面外で終了）
+      if (isInfiniteMode) {
+        // 無限モード: 壁で跳ね返る
+        const bounce = 0.8  // 跳ね返り係数
         
-        // Reset combo if missed
-        setTimeout(() => {
-          comboRef.current = 0
-          setCombo(0)
-        }, 1000)
+        if (slime.x - SLIME_RADIUS < 0) {
+          slime.x = SLIME_RADIUS
+          slime.vx = Math.abs(slime.vx) * bounce
+          slime.wobbleAmplitude = 0.3
+        } else if (slime.x + SLIME_RADIUS > CANVAS_WIDTH) {
+          slime.x = CANVAS_WIDTH - SLIME_RADIUS
+          slime.vx = -Math.abs(slime.vx) * bounce
+          slime.wobbleAmplitude = 0.3
+        }
+        
+        if (slime.y - SLIME_RADIUS < 0) {
+          slime.y = SLIME_RADIUS
+          slime.vy = Math.abs(slime.vy) * bounce
+          slime.wobbleAmplitude = 0.3
+        } else if (slime.y + SLIME_RADIUS > CANVAS_HEIGHT) {
+          slime.y = CANVAS_HEIGHT - SLIME_RADIUS
+          slime.vy = -Math.abs(slime.vy) * bounce
+          slime.wobbleAmplitude = 0.3
+        }
+        
+        // エネルギーが低くなったら自動リセット
+        const speed = Math.sqrt(slime.vx ** 2 + slime.vy ** 2)
+        if (speed < 0.5) {
+          slime.active = false
+          slime.x = SLIME_START_X
+          slime.y = SLIME_START_Y
+          slime.vx = 0
+          slime.vy = 0
+          slime.scaleX = 1
+          slime.scaleY = 1
+          slime.rotation = 0
+          slime.trail = []
+          setGameState('ready')
+        }
+      } else {
+        // 通常モード: 画面外で終了
+        if (slime.y < -50 || slime.x < -50 || slime.x > CANVAS_WIDTH + 50 || slime.y > CANVAS_HEIGHT + 50) {
+          slime.active = false
+          slime.x = SLIME_START_X
+          slime.y = SLIME_START_Y
+          slime.vx = 0
+          slime.vy = 0
+          slime.scaleX = 1
+          slime.scaleY = 1
+          slime.rotation = 0
+          slime.trail = []
+          setGameState('ready')
+          
+          // Reset combo if missed
+          setTimeout(() => {
+            comboRef.current = 0
+            setCombo(0)
+          }, 1000)
+        }
       }
     } else {
       // Not active - ensure at start position
@@ -833,15 +877,17 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     setDragCurrent(null)
     
     // Check game end
-    setTimeout(() => {
-      if (attemptsLeft - 1 <= 0) {
-        setGameState('ended')
-        setTimeout(() => onGameEnd(scoreRef.current), 1000)
-      } else {
-        setGameState('ready')
-      }
-    }, 3000)
-  }, [gameState, dragCurrent, attemptsLeft, onGameEnd])
+    if (!isInfiniteMode) {
+      setTimeout(() => {
+        if (attemptsLeft - 1 <= 0) {
+          setGameState('ended')
+          setTimeout(() => onGameEnd(scoreRef.current), 1000)
+        } else {
+          setGameState('ready')
+        }
+      }, 3000)
+    }
+  }, [gameState, dragCurrent, attemptsLeft, onGameEnd, isInfiniteMode])
   
   return (
     <div
@@ -871,8 +917,15 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
         alignItems: 'center'
       }}>
         <div>
-          <div style={{ fontSize: '1.3rem', fontWeight: '700' }}>💧 スライムシューター</div>
-          <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>残り: {attemptsLeft}回</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: '700' }}>
+            {isInfiniteMode ? '🔄 無限昼食' : '💧 スライムシューター'}
+          </div>
+          {!isInfiniteMode && (
+            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>残り: {attemptsLeft}回</div>
+          )}
+          {isInfiniteMode && (
+            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>∞ 跳ね返り続ける！</div>
+          )}
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>スコア</div>
@@ -1016,23 +1069,32 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
       </div>
 
       {/* Close button */}
-      {gameState === 'ended' && (
+      {(gameState === 'ended' || isInfiniteMode) && (
         <button
-          onClick={onClose}
+          onClick={() => {
+            if (isInfiniteMode && gameState !== 'ended') {
+              onGameEnd(scoreRef.current)
+            }
+            onClose()
+          }}
           style={{
             marginTop: '16px',
             padding: '14px 40px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: isInfiniteMode && gameState !== 'ended'
+              ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             color: 'white',
             fontSize: '1.2rem',
             fontWeight: '700',
             borderRadius: '12px',
             border: 'none',
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
+            boxShadow: isInfiniteMode && gameState !== 'ended'
+              ? '0 4px 12px rgba(239, 68, 68, 0.4)'
+              : '0 4px 12px rgba(102, 126, 234, 0.4)'
           }}
         >
-          閉じる
+          {isInfiniteMode && gameState !== 'ended' ? '⏹️ 終了' : '閉じる'}
         </button>
       )}
     </div>

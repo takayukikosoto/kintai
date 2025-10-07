@@ -3,6 +3,7 @@ import SlimeShooterV2 from '../components/SlimeShooterV2'
 
 export default function SlimeGamePracticePage() {
   const [showGame, setShowGame] = useState(false)
+  const [gameMode, setGameMode] = useState<'practice' | 'infinite'>('practice')
   const [lastScore, setLastScore] = useState<number | null>(null)
 
   function handleGameEnd(score: number) {
@@ -94,12 +95,92 @@ export default function SlimeGamePracticePage() {
           </div>
         )}
 
+        {/* モード選択 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '1rem',
+          marginBottom: '1.5rem'
+        }}>
+          <button
+            onClick={() => setGameMode('practice')}
+            style={{
+              padding: '1.2rem',
+              background: gameMode === 'practice' 
+                ? 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)'
+                : '#f7fafc',
+              color: gameMode === 'practice' ? 'white' : '#4a5568',
+              border: gameMode === 'practice' ? 'none' : '2px solid #e2e8f0',
+              borderRadius: '12px',
+              fontSize: '1.1rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: gameMode === 'practice' 
+                ? '0 4px 12px rgba(72, 187, 120, 0.3)'
+                : 'none'
+            }}
+          >
+            🎯 昼食練習モード
+          </button>
+          <button
+            onClick={() => setGameMode('infinite')}
+            style={{
+              padding: '1.2rem',
+              background: gameMode === 'infinite' 
+                ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                : '#f7fafc',
+              color: gameMode === 'infinite' ? 'white' : '#4a5568',
+              border: gameMode === 'infinite' ? 'none' : '2px solid #e2e8f0',
+              borderRadius: '12px',
+              fontSize: '1.1rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: gameMode === 'infinite' 
+                ? '0 4px 12px rgba(245, 158, 11, 0.3)'
+                : 'none'
+            }}
+          >
+            🔄 無限昼食モード
+          </button>
+        </div>
+
+        {/* モード説明 */}
+        <div style={{
+          padding: '1rem',
+          background: gameMode === 'practice' ? '#f0fff4' : '#fff7ed',
+          borderRadius: '8px',
+          border: `2px solid ${gameMode === 'practice' ? '#48bb78' : '#f59e0b'}`,
+          marginBottom: '1.5rem',
+          fontSize: '0.9rem',
+          lineHeight: '1.6'
+        }}>
+          {gameMode === 'practice' ? (
+            <>
+              <strong style={{ color: '#2f855a' }}>🎯 昼食練習モード</strong>
+              <p style={{ marginTop: '0.5rem', marginBottom: 0, color: '#4a5568' }}>
+                本番と同じルールで3回発射。武器の特性やコンボのコツを掴もう！
+              </p>
+            </>
+          ) : (
+            <>
+              <strong style={{ color: '#c05621' }}>🔄 無限昼食モード</strong>
+              <p style={{ marginTop: '0.5rem', marginBottom: 0, color: '#4a5568' }}>
+                壁で跳ね返り続ける！ピンボール感覚で延々と楽しめる無限モード。回数制限なし！
+              </p>
+            </>
+          )}
+        </div>
+
         <button
           onClick={() => setShowGame(true)}
           style={{
             width: '100%',
             padding: '1.5rem',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: gameMode === 'practice'
+              ? 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)'
+              : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
             color: 'white',
             border: 'none',
             borderRadius: '12px',
@@ -107,12 +188,14 @@ export default function SlimeGamePracticePage() {
             fontWeight: '700',
             cursor: 'pointer',
             transition: 'transform 0.2s',
-            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+            boxShadow: gameMode === 'practice'
+              ? '0 4px 15px rgba(72, 187, 120, 0.4)'
+              : '0 4px 15px rgba(245, 158, 11, 0.4)'
           }}
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-          🎯 練習スタート
+          {gameMode === 'practice' ? '🎯 練習スタート' : '🔄 無限モードスタート'}
         </button>
 
         {/* 遊び方 */}
@@ -363,6 +446,7 @@ export default function SlimeGamePracticePage() {
         <SlimeShooterV2
           onGameEnd={handleGameEnd}
           onClose={() => setShowGame(false)}
+          mode={gameMode}
         />
       )}
     </div>
