@@ -1054,6 +1054,27 @@ export default function SlimeShooterV2({ onGameEnd, onClose, mode = 'normal' }: 
           >
             ⭕ 円月輪
           </button>
+          
+          {/* 終了ボタン */}
+          <button
+            onClick={() => {
+              onGameEnd(scoreRef.current)
+              onClose()
+            }}
+            style={{
+              padding: '8px 16px',
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              marginLeft: 'auto'
+            }}
+          >
+            ✕ 終了
+          </button>
         </div>
       )}
 
@@ -1116,36 +1137,6 @@ export default function SlimeShooterV2({ onGameEnd, onClose, mode = 'normal' }: 
           </div>
         )}
       </div>
-
-      {/* Close button */}
-      {(gameState === 'ended' || isInfiniteMode) && (
-        <button
-          onClick={() => {
-            if (isInfiniteMode && gameState !== 'ended') {
-              onGameEnd(scoreRef.current)
-            }
-            onClose()
-          }}
-          style={{
-            marginTop: '16px',
-            padding: '14px 40px',
-            background: isInfiniteMode && gameState !== 'ended'
-              ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
-              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            fontSize: '1.2rem',
-            fontWeight: '700',
-            borderRadius: '12px',
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: isInfiniteMode && gameState !== 'ended'
-              ? '0 4px 12px rgba(239, 68, 68, 0.4)'
-              : '0 4px 12px rgba(102, 126, 234, 0.4)'
-          }}
-        >
-          {isInfiniteMode && gameState !== 'ended' ? '⏹️ 終了' : '閉じる'}
-        </button>
-      )}
     </div>
   )
 }
