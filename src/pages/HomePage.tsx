@@ -35,6 +35,12 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
   }, [userId])
 
   async function checkCanPlayGame() {
+    // 🚧 DEBUG MODE: 制限を一時的に無効化
+    // TODO: デバッグ後に下記のコメントを外して制限を戻す
+    setCanPlayGame(true)
+    return
+
+    /* 本番用の制限コード（デバッグ後に有効化）
     try {
       const now = new Date()
       const hour = now.getHours()
@@ -64,6 +70,7 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
     } catch (error) {
       console.error('ゲーム可否チェックエラー:', error)
     }
+    */
   }
 
   async function handleGameEnd(score: number) {
