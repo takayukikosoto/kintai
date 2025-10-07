@@ -95,9 +95,9 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   
   // Constants
   const CANVAS_WIDTH = 400
-  const CANVAS_HEIGHT = 600
+  const CANVAS_HEIGHT = 1200  // 600 → 1200に拡張（2倍）
   const SLIME_START_X = CANVAS_WIDTH / 2
-  const SLIME_START_Y = 500  // 550 → 500に変更（50px上に）
+  const SLIME_START_Y = 1100  // 画面下部に配置
   const SLIME_RADIUS = 20
   
   // Physics constants
@@ -122,16 +122,16 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   function initTargets() {
     const targets: Target[] = []
     const configs = [
-      { emoji: '⭐', points: 50, count: 3 },
-      { emoji: '💰', points: 100, count: 4 },
-      { emoji: '💎', points: 200, count: 3 }
+      { emoji: '⭐', points: 50, count: 9 },   // 3 → 9
+      { emoji: '💰', points: 100, count: 12 }, // 4 → 12
+      { emoji: '💎', points: 200, count: 9 }   // 3 → 9
     ]
     
     let id = 0
     configs.forEach(config => {
       for (let i = 0; i < config.count; i++) {
         const x = 60 + Math.random() * (CANVAS_WIDTH - 120)
-        const y = 60 + Math.random() * 280
+        const y = 60 + Math.random() * 900  // 280 → 900 (広い範囲に配置)
         targets.push({
           id: id++,
           x,
@@ -412,8 +412,8 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
         }
       })
       
-      // Out of bounds check
-      if (slime.y < -50 || slime.x < -50 || slime.x > CANVAS_WIDTH + 50 || slime.y > CANVAS_HEIGHT + 50) {
+      // Out of bounds check (画面外も許容、より広い範囲)
+      if (slime.y < -200 || slime.x < -200 || slime.x > CANVAS_WIDTH + 200 || slime.y > CANVAS_HEIGHT + 200) {
         slime.active = false
         setGameState('ready')
         
