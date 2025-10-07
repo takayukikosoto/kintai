@@ -7,6 +7,7 @@ import Navigation from './components/Navigation'
 import HomePage from './pages/HomePage'
 import MyPage from './pages/MyPage'
 import AdminScannerPage from './pages/AdminScannerPage'
+import AdminContinuousScannerPage from './pages/AdminContinuousScannerPage'
 import AdminRatesPage from './pages/AdminRatesPage'
 import AdminUsersPage from './pages/AdminUsersPage'
 import { ToastContainer } from './components/Toast'
@@ -163,6 +164,9 @@ export default function App() {
           <Route path="/" element={<HomePage userId={user.uid} defaultRate={defaultRate} isAdmin={isAdmin} />} />
           <Route path="/mypage" element={<MyPage userId={user.uid} userEmail={user.email || ''} onDefaultRateChange={setDefaultRate} />} />
           <Route path="/admin-scanner" element={<AdminScannerPage />} />
+          <Route path="/admin-continuous-scanner" element={
+            isAdmin ? <AdminContinuousScannerPage /> : <div className="card"><h2>⚠️ アクセス拒否</h2><p>このページは管理者専用です</p></div>
+          } />
           <Route path="/admin-users" element={
             isAdmin ? <AdminUsersPage /> : <div className="card"><h2>⚠️ アクセス拒否</h2><p>このページは管理者専用です</p></div>
           } />
