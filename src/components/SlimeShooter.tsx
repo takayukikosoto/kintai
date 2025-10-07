@@ -36,6 +36,7 @@ export default function SlimeShooter({ onGameEnd, onClose }: SlimeShooterProps) 
   const targetsRef = useRef<Target[]>([])
   const particlesRef = useRef<Particle[]>([])
   const animationRef = useRef<number>()
+  const scoreRef = useRef(0)
 
   const CANVAS_WIDTH = 400
   const CANVAS_HEIGHT = 600
@@ -116,7 +117,8 @@ export default function SlimeShooter({ onGameEnd, onClose }: SlimeShooterProps) 
             
             if (distance < 30) {
               target.hit = true
-              setScore(prev => prev + target.points)
+              scoreRef.current += target.points
+              setScore(scoreRef.current)
               createParticles(target.x, target.y, target.points >= 100 ? '#ffd700' : '#60a5fa')
             }
           }
@@ -134,9 +136,26 @@ export default function SlimeShooter({ onGameEnd, onClose }: SlimeShooterProps) 
         const displayY = slime.active ? slime.y : SLIME_START_Y
         const displayX = slime.active ? slime.x : CANVAS_WIDTH / 2
         
-        ctx.font = '48px Arial'
-        ctx.textAlign = 'center'
-        ctx.fillText('💧', displayX, displayY)
+        // 引っ張り中のスライム変形
+        if (gameState === 'aiming' && dragStart && dragCurrent) {
+          const dx = dragCurrent.x - CANVAS_WIDTH / 2
+          const dy = dragCurrent.y - SLIME_START_Y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+          const stretch = Math.min(distance / 50, 2)
+          
+          // 伸びたスライムを描画
+          ctx.save()
+          ctx.translate(CANVAS_WIDTH / 2, SLIME_START_Y)
+          ctx.scale(1 + stretch * 0.3, 1 - stretch * 0.2)
+          ctx.font = '48px Arial'
+          ctx.textAlign = 'center'
+          ctx.fillText('💧', 0, 0)
+          ctx.restore()
+        } else {
+          ctx.font = '48px Arial'
+          ctx.textAlign = 'center'
+          ctx.fillText('💧', displayX, displayY)
+        }
       }
 
       // Update and draw particles
@@ -258,7 +277,7 @@ export default function SlimeShooter({ onGameEnd, onClose }: SlimeShooterProps) 
     setTimeout(() => {
       if (attemptsLeft - 1 <= 0) {
         setGameState('ended')
-        setTimeout(() => onGameEnd(score), 1000)
+        setTimeout(() => onGameEnd(scoreRef.current), 1000)
       } else {
         setGameState('ready')
       }
