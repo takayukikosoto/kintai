@@ -93,5 +93,24 @@ service cloud.firestore {
       // Delete: admin only
       allow delete: if isAdmin();
     }
+
+    // ========== Slime Games Collection (昼食ゲーム結果) ==========
+    match /slimeGames/{id} {
+      // Read: owner or admin
+      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      
+      // Create: must be owner or admin
+      allow create: if isSignedIn()
+        && (isAdmin() || request.resource.data.userId == request.auth.uid)
+        && request.resource.data.userId is string
+        && request.resource.data.date is string
+        && request.resource.data.score is number;
+      
+      // Update: admin only
+      allow update: if isAdmin();
+      
+      // Delete: admin only
+      allow delete: if isAdmin();
+    }
   }
 }

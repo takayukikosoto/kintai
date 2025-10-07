@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { collection, query, where, orderBy, getDocs, limit } from 'firebase/firestore'
+import { collection, query, where, orderBy, getDocs, limit, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import { jst, jstRounded } from '../lib/pay'
 import AttendancePanel from '../components/AttendancePanel'
 import TimesheetHistory from '../components/TimesheetHistory'
 import AdminTimesheetView from '../components/AdminTimesheetView'
+import SlimeShooter from '../components/SlimeShooter'
+import { showToast } from '../components/Toast'
 import type { TimesheetEntry } from '../types'
 
 interface HomePageProps {
@@ -19,12 +21,99 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
     entry?: TimesheetEntry
   }>({ status: 'before' })
   const [loading, setLoading] = useState(true)
+  const [showSlimeGame, setShowSlimeGame] = useState(false)
+  const [canPlayGame, setCanPlayGame] = useState(false)
 
   useEffect(() => {
     loadCurrentStatus()
-    const interval = setInterval(loadCurrentStatus, 30000) // 30秒ごとに更新
+    checkCanPlayGame()
+    const interval = setInterval(() => {
+      loadCurrentStatus()
+      checkCanPlayGame()
+    }, 30000) // 30秒ごとに更新
     return () => clearInterval(interval)
   }, [userId])
+
+  async function checkCanPlayGame() {
+    try {
+      const now = new Date()
+      const hour = now.getHours()
+      
+      // 12時以降のみゲーム可能
+      if (hour < 12) {
+        setCanPlayGame(false)
+        return
+      }
+
+      // 今日既にプレイしたかチェック
+      const today = new Date().toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).replace(/\//g, '-')
+
+      const q = query(
+        collection(db, 'slimeGames'),
+        where('userId', '==', userId),
+        where('date', '==', today),
+        limit(1)
+      )
+      const snap = await getDocs(q)
+      
+      setCanPlayGame(snap.empty)
+    } catch (error) {
+      console.error('ゲーム可否チェックエラー:', error)
+    }
+  }
+
+  async function handleGameEnd(score: number) {
+    try {
+      const today = new Date().toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).replace(/\//g, '-')
+
+      // 報酬を決定
+      let reward = ''
+      let rewardEmoji = ''
+      
+      if (score >= 400) {
+        reward = 'ゲームソフト抽選券'
+        rewardEmoji = '🎮'
+      } else if (score >= 300) {
+        reward = 'ウィダーインゼリー'
+        rewardEmoji = '🥤'
+      } else if (score >= 200) {
+        reward = 'ミネラルウォーター'
+        rewardEmoji = '💧'
+      } else if (score >= 100) {
+        reward = '駄菓子'
+        rewardEmoji = '🍘'
+      } else {
+        reward = 'ティッシュ1個'
+        rewardEmoji = '🧻'
+      }
+
+      // 結果を保存
+      await addDoc(collection(db, 'slimeGames'), {
+        userId,
+        date: today,
+        score,
+        reward,
+        rewardEmoji,
+        timestamp: new Date().toISOString(),
+        _ts: serverTimestamp()
+      })
+
+      showToast(`🎉 ${score}点！報酬: ${rewardEmoji} ${reward}`, 'success')
+      setShowSlimeGame(false)
+      setCanPlayGame(false)
+    } catch (error) {
+      console.error('ゲーム結果保存エラー:', error)
+      showToast('結果の保存に失敗しました', 'error')
+    }
+  }
 
   async function loadCurrentStatus() {
     try {
@@ -162,6 +251,40 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
             )}
           </div>
         )}
+
+        {/* 昼食ゲームボタン */}
+        {currentStatus.status === 'working' && canPlayGame && (
+          <div style={{ marginTop: '16px' }}>
+            <button
+              onClick={() => setShowSlimeGame(true)}
+              style={{
+                width: '100%',
+                padding: '16px',
+                background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                color: 'white',
+                fontSize: '1.2rem',
+                fontWeight: '700',
+                borderRadius: '12px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(72, 187, 120, 0.3)',
+                transition: 'transform 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              🍽️ 昼食ゲームで遊ぶ 💧
+            </button>
+            <div style={{
+              marginTop: '8px',
+              fontSize: '0.85rem',
+              color: '#718096',
+              textAlign: 'center'
+            }}>
+              スライムを飛ばして得点ゲット！1日1回限定
+            </div>
+          </div>
+        )}
       </div>
 
       <AttendancePanel userId={userId} defaultRate={defaultRate} />
@@ -169,6 +292,14 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
         <AdminTimesheetView userId={userId} />
       ) : (
         <TimesheetHistory userId={userId} isAdmin={false} />
+      )}
+
+      {/* スライムゲームモーダル */}
+      {showSlimeGame && (
+        <SlimeShooter
+          onGameEnd={handleGameEnd}
+          onClose={() => setShowSlimeGame(false)}
+        />
       )}
     </>
   )

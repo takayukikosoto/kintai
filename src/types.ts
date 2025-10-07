@@ -52,3 +52,15 @@ export interface LotteryResult {
   rarity: LotteryRarity
   timestamp: string     // ISO UTC
 }
+
+// ========== スライムゲーム ==========
+
+export interface SlimeGameResult {
+  id?: string
+  userId: string
+  date: string          // YYYY-MM-DD
+  score: number
+  reward: string        // 報酬名
+  rewardEmoji: string
+  timestamp: string     // ISO UTC
+}
