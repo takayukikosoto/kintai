@@ -19,6 +19,7 @@ interface Target {
   floatPhase: number
   rotation: number
   scale: number
+  hitTime: number  // 当たった時刻
 }
 
 enum ParticleType {
@@ -151,7 +152,8 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
           hit: false,
           floatPhase: Math.random() * Math.PI * 2,
           rotation: 0,
-          scale: 1
+          scale: 1,
+          hitTime: 0
         })
       }
     })
@@ -302,7 +304,15 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   
   // ========== ターゲット更新・描画 ==========
   function updateAndDrawTargets(ctx: CanvasRenderingContext2D, time: number, deltaTime: number) {
+    const currentTime = Date.now()
+    
     targetsRef.current.forEach(target => {
+      // 復活処理（1秒後に復活）
+      if (target.hit && currentTime - target.hitTime > 1000) {
+        target.hit = false
+        target.scale = 1
+      }
+      
       if (target.hit) return
       
       // Floating animation
@@ -310,34 +320,34 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
       target.y = target.baseY + Math.sin(target.floatPhase) * 15
       target.rotation += deltaTime * 0.5
       
-      // Draw glow for high-value targets (サイズ調整)
+      // Draw glow for high-value targets (サイズ1.5倍)
       if (target.points >= 200) {
         const pulse = 0.7 + Math.sin(time * 0.003) * 0.3
         ctx.save()
         ctx.globalAlpha = pulse * 0.3
         ctx.fillStyle = '#ffd700'
         ctx.beginPath()
-        ctx.arc(target.x, target.y, 18, 0, Math.PI * 2)  // 35 → 18
+        ctx.arc(target.x, target.y, 27, 0, Math.PI * 2)  // 18 → 27 (1.5倍)
         ctx.fill()
         ctx.restore()
       }
       
-      // Draw target (サイズ半分)
+      // Draw target (サイズ1.5倍に戻す)
       ctx.save()
       ctx.translate(target.x, target.y)
       ctx.rotate(target.rotation)
       ctx.scale(target.scale, target.scale)
-      ctx.font = '16px Arial'  // 32px → 16px
+      ctx.font = '24px Arial'  // 16px → 24px (1.5倍)
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(target.emoji, 0, 0)
       ctx.restore()
       
       // Draw points
-      ctx.font = '8px Arial'  // 12px → 8px
+      ctx.font = '12px Arial'  // 8px → 12px (1.5倍)
       ctx.fillStyle = '#ffd700'
       ctx.textAlign = 'center'
-      ctx.fillText(`${target.points}`, target.x, target.y + 12)
+      ctx.fillText(`${target.points}`, target.x, target.y + 18)
     })
   }
   
@@ -359,22 +369,26 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
         slime.vx *= 0.998
         slime.vy *= 0.998
       } else if (slime.type === 'boomerang') {
-        // ブーメラン：戻ってくる動き
+        // ブーメラン：遅くグルグル、寂しげに戻る
         slime.returnTime += deltaTime
         const currentDist = distance(slime.x, slime.y, slime.startX, slime.startY)
         slime.maxDistance = Math.max(slime.maxDistance, currentDist)
         
-        // 一定距離または時間で戻り始める
-        if (slime.returnTime > 1.5 || currentDist > 400) {
+        // より早く、より強く戻り始める（寂しげに）
+        if (slime.returnTime > 0.8 || currentDist > 250) {
           const returnAngle = Math.atan2(slime.startY - slime.y, slime.startX - slime.x)
-          const returnForce = 0.5
+          const returnForce = 0.8  // 戻る力を強く
           slime.vx += Math.cos(returnAngle) * returnForce
           slime.vy += Math.sin(returnAngle) * returnForce
+          
+          // 寂しげな揺れ
+          slime.vx += Math.sin(slime.returnTime * 5) * 0.3
+          slime.vy += Math.cos(slime.returnTime * 5) * 0.3
         }
         
-        slime.vy += GRAVITY * 0.2 * deltaTime * 60
-        slime.vx *= 0.99
-        slime.vy *= 0.99
+        slime.vy += GRAVITY * 0.15 * deltaTime * 60
+        slime.vx *= 0.985  // より減速
+        slime.vy *= 0.985
       } else {
         // スライム：通常の物理
         slime.vy += GRAVITY * deltaTime * 60
@@ -391,8 +405,8 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
         // 矢：速度方向を向く
         slime.rotation = Math.atan2(slime.vy, slime.vx)
       } else if (slime.type === 'boomerang') {
-        // ブーメラン：高速回転
-        slime.rotation += deltaTime * 60 * 0.3
+        // ブーメラン：ゆっくりグルグル回転
+        slime.rotation += deltaTime * 60 * 0.15  // 0.3 → 0.15（半分の速度）
       } else {
         // スライム：通常回転
         slime.rotation += (speed / 10) * deltaTime * 60 * 0.1
@@ -430,11 +444,12 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
       })
       slime.trail = slime.trail.filter(t => t.alpha > 0.01)
       
-      // Collision detection (サイズ半分なので判定も小さく)
+      // Collision detection (サイズ1.5倍に戻す)
       targetsRef.current.forEach(target => {
-        if (!target.hit && distance(slime.x, slime.y, target.x, target.y) < SLIME_RADIUS + 10) {
+        if (!target.hit && distance(slime.x, slime.y, target.x, target.y) < SLIME_RADIUS + 15) {
           target.hit = true
           target.scale = 1.5
+          target.hitTime = Date.now()
           
           // Update score and combo
           const now = Date.now()
@@ -788,7 +803,7 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     if (selectedProjectile === 'arrow') {
       powerMultiplier = 1.8  // 矢は速い
     } else if (selectedProjectile === 'boomerang') {
-      powerMultiplier = 1.3  // ブーメランは中間
+      powerMultiplier = 0.7  // ブーメランは遅く寂しげに
     }
     
     const power = Math.min(dist / MAX_DRAG_DISTANCE, 1) * 20 * powerMultiplier

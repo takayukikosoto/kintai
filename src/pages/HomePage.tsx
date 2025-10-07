@@ -81,20 +81,20 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
         day: '2-digit'
       }).replace(/\//g, '-')
 
-      // 報酬を決定（5倍厳格化）
+      // 報酬を決定（10倍厳格化）
       let reward = ''
       let rewardEmoji = ''
       
-      if (score >= 6000) {
+      if (score >= 60000) {
         reward = 'ゲームソフト抽選券'
         rewardEmoji = '🎮'
-      } else if (score >= 4000) {
+      } else if (score >= 40000) {
         reward = 'ウィダーインゼリー'
         rewardEmoji = '🥤'
-      } else if (score >= 2500) {
+      } else if (score >= 25000) {
         reward = 'ミネラルウォーター'
         rewardEmoji = '💧'
-      } else if (score >= 1500) {
+      } else if (score >= 15000) {
         reward = '駄菓子'
         rewardEmoji = '🍘'
       } else {
