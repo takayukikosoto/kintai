@@ -14,6 +14,7 @@ export default function Navigation({ userEmail, isAdmin, onSignOut }: Navigation
     { path: '/mypage', label: '👤 マイページ', icon: '👤', adminOnly: false },
     { path: '/admin-scanner', label: '📷 QRスキャナー', icon: '📷', adminOnly: false },
     { path: '/admin-continuous-scanner', label: '📹 連続スキャン', icon: '📹', adminOnly: true },
+    { path: '/admin-lottery', label: '🎰 抽選設定', icon: '🎰', adminOnly: true },
     { path: '/admin-users', label: '👥 ユーザー管理', icon: '👥', adminOnly: true },
     { path: '/admin-rates', label: '⚙️ 管理設定', icon: '⚙️', adminOnly: true },
   ]

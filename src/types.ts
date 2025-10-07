@@ -23,3 +23,32 @@ export interface TimesheetEntry {
   createdAt: string // ISO UTC
   updatedAt: string // ISO UTC
 }
+
+// ========== 抽選機能 ==========
+
+export type LotteryRarity = 'normal' | 'ssr'
+export type LotterySlot = 'morning' | 'lunch'
+
+export interface Prize {
+  id?: string
+  name: string
+  emoji: string
+  rarity: LotteryRarity
+  probability: number  // パーセンテージ (例: 10 = 10%)
+  enabled: boolean
+  order: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface LotteryResult {
+  id?: string
+  userId: string
+  date: string          // YYYY-MM-DD
+  slot: LotterySlot     // morning or lunch
+  prizeId: string | null
+  prizeName: string
+  prizeEmoji: string
+  rarity: LotteryRarity
+  timestamp: string     // ISO UTC
+}

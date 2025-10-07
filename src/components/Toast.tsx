@@ -56,16 +56,16 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
         position: 'fixed',
         top: '20px',
         right: '20px',
-        minWidth: '300px',
-        maxWidth: '500px',
+        minWidth: '400px',
+        maxWidth: '600px',
         background: style.bg,
-        border: `2px solid ${style.border}`,
-        borderRadius: '8px',
-        padding: '12px 16px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        border: `3px solid ${style.border}`,
+        borderRadius: '12px',
+        padding: '20px 24px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
+        gap: '16px',
         zIndex: 10000,
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateX(0)' : 'translateX(20px)',
@@ -78,7 +78,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
       }}
     >
       <div style={{
-        fontSize: '1.2rem',
+        fontSize: '2rem',
         fontWeight: 'bold',
         color: style.text
       }}>
@@ -87,8 +87,9 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
       <div style={{
         flex: 1,
         color: style.text,
-        fontSize: '0.9rem',
-        lineHeight: '1.4'
+        fontSize: '1.2rem',
+        lineHeight: '1.5',
+        fontWeight: '500'
       }}>
         {message}
       </div>
@@ -102,7 +103,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
           background: 'transparent',
           border: 'none',
           color: style.text,
-          fontSize: '1.2rem',
+          fontSize: '1.5rem',
           cursor: 'pointer',
           padding: '0 4px',
           opacity: 0.7
@@ -162,7 +163,7 @@ export function ToastContainer() {
           key={toast.id}
           style={{
             position: 'fixed',
-            top: `${20 + index * 80}px`,
+            top: `${20 + index * 120}px`,
             right: '20px',
             zIndex: 10000
           }}

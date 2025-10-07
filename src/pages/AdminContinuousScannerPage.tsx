@@ -4,7 +4,9 @@ import { collection, addDoc, serverTimestamp, query, where, getDocs, limit, orde
 import { db } from '../firebase'
 import { compute, nowIsoUtc, jst } from '../lib/pay'
 import { showToast } from '../components/Toast'
-import type { TimesheetEntry } from '../types'
+import { executeLottery, getCurrentSlot } from '../lib/lottery'
+import LotteryModal from '../components/LotteryModal'
+import type { TimesheetEntry, Prize } from '../types'
 
 interface ScanLog {
   id: string
@@ -18,6 +20,8 @@ interface ScanLog {
 export default function AdminContinuousScannerPage() {
   const [scanning, setScanning] = useState(false)
   const [logs, setLogs] = useState<ScanLog[]>([])
+  const [lotteryPrize, setLotteryPrize] = useState<Prize | null>(null)
+  const [showLottery, setShowLottery] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const readerRef = useRef<BrowserMultiFormatReader | null>(null)
   const lastScanRef = useRef<string>('')
@@ -104,6 +108,22 @@ export default function AdminContinuousScannerPage() {
         await clockIn(userId)
         action = 'checkin'
         showToast(`✓ 出勤: ${userEmail}`, 'success')
+
+        // 抽選を実行
+        try {
+          const slot = getCurrentSlot()
+          if (slot) {
+            const prize = await executeLottery(userId, slot)
+            if (prize) {
+              // 抽選に当たった！
+              setLotteryPrize(prize)
+              setShowLottery(true)
+            }
+          }
+        } catch (error: any) {
+          console.error('抽選エラー:', error)
+          // 抽選エラーは無視（出勤処理は成功）
+        }
       } else {
         // 出勤記録がある → 退勤
         const activeDoc = snap.docs[0]
@@ -263,6 +283,17 @@ export default function AdminContinuousScannerPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* 抽選モーダル */}
+      {showLottery && lotteryPrize && (
+        <LotteryModal
+          prize={lotteryPrize}
+          onClose={() => {
+            setShowLottery(false)
+            setLotteryPrize(null)
+          }}
+        />
       )}
     </div>
   )
