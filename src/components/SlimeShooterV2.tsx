@@ -97,7 +97,7 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   const CANVAS_WIDTH = 400
   const CANVAS_HEIGHT = 1200  // 600 → 1200に拡張（2倍）
   const SLIME_START_X = CANVAS_WIDTH / 2
-  const SLIME_START_Y = 1100  // 画面下部に配置
+  const SLIME_START_Y = 100  // 画面上部に配置
   const SLIME_RADIUS = 20
   
   // Physics constants
@@ -131,7 +131,7 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     configs.forEach(config => {
       for (let i = 0; i < config.count; i++) {
         const x = 60 + Math.random() * (CANVAS_WIDTH - 120)
-        const y = 60 + Math.random() * 900  // 280 → 900 (広い範囲に配置)
+        const y = 200 + Math.random() * 900  // 画面中央～下部に配置
         targets.push({
           id: id++,
           x,
@@ -415,6 +415,14 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
       // Out of bounds check (画面外も許容、より広い範囲)
       if (slime.y < -200 || slime.x < -200 || slime.x > CANVAS_WIDTH + 200 || slime.y > CANVAS_HEIGHT + 200) {
         slime.active = false
+        slime.x = SLIME_START_X
+        slime.y = SLIME_START_Y
+        slime.vx = 0
+        slime.vy = 0
+        slime.scaleX = 1
+        slime.scaleY = 1
+        slime.rotation = 0
+        slime.trail = []
         setGameState('ready')
         
         // Reset combo if missed
@@ -423,6 +431,15 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
           setCombo(0)
         }, 1000)
       }
+    } else {
+      // Not active - ensure at start position
+      slime.x = SLIME_START_X
+      slime.y = SLIME_START_Y
+      slime.vx = 0
+      slime.vy = 0
+      slime.scaleX = 1
+      slime.scaleY = 1
+      slime.rotation = 0
     }
     
     // Draw trail
