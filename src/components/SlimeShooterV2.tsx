@@ -122,9 +122,9 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   function initTargets() {
     const targets: Target[] = []
     const configs = [
-      { emoji: '⭐', points: 50, count: 9 },   // 3 → 9
-      { emoji: '💰', points: 100, count: 12 }, // 4 → 12
-      { emoji: '💎', points: 200, count: 9 }   // 3 → 9
+      { emoji: '⭐', points: 50, count: 27 },   // 9 → 27 (3倍)
+      { emoji: '💰', points: 100, count: 36 }, // 12 → 36 (3倍)
+      { emoji: '💎', points: 200, count: 27 }   // 9 → 27 (3倍)
     ]
     
     let id = 0
@@ -301,34 +301,34 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
       target.y = target.baseY + Math.sin(target.floatPhase) * 15
       target.rotation += deltaTime * 0.5
       
-      // Draw glow for high-value targets
+      // Draw glow for high-value targets (サイズ調整)
       if (target.points >= 200) {
         const pulse = 0.7 + Math.sin(time * 0.003) * 0.3
         ctx.save()
         ctx.globalAlpha = pulse * 0.3
         ctx.fillStyle = '#ffd700'
         ctx.beginPath()
-        ctx.arc(target.x, target.y, 35, 0, Math.PI * 2)
+        ctx.arc(target.x, target.y, 18, 0, Math.PI * 2)  // 35 → 18
         ctx.fill()
         ctx.restore()
       }
       
-      // Draw target
+      // Draw target (サイズ半分)
       ctx.save()
       ctx.translate(target.x, target.y)
       ctx.rotate(target.rotation)
       ctx.scale(target.scale, target.scale)
-      ctx.font = '32px Arial'
+      ctx.font = '16px Arial'  // 32px → 16px
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(target.emoji, 0, 0)
       ctx.restore()
       
       // Draw points
-      ctx.font = '12px Arial'
+      ctx.font = '8px Arial'  // 12px → 8px
       ctx.fillStyle = '#ffd700'
       ctx.textAlign = 'center'
-      ctx.fillText(`${target.points}`, target.x, target.y + 25)
+      ctx.fillText(`${target.points}`, target.x, target.y + 12)
     })
   }
   
@@ -382,9 +382,9 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
       })
       slime.trail = slime.trail.filter(t => t.alpha > 0.01)
       
-      // Collision detection
+      // Collision detection (サイズ半分なので判定も小さく)
       targetsRef.current.forEach(target => {
-        if (!target.hit && distance(slime.x, slime.y, target.x, target.y) < SLIME_RADIUS + 20) {
+        if (!target.hit && distance(slime.x, slime.y, target.x, target.y) < SLIME_RADIUS + 10) {
           target.hit = true
           target.scale = 1.5
           
