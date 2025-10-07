@@ -95,9 +95,9 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   
   // Constants
   const CANVAS_WIDTH = 400
-  const CANVAS_HEIGHT = 1200  // 600 → 1200に拡張（2倍）
+  const CANVAS_HEIGHT = 600  // 通常サイズに戻す
   const SLIME_START_X = CANVAS_WIDTH / 2
-  const SLIME_START_Y = 100  // 画面上部に配置
+  const SLIME_START_Y = 500  // 画面下部に配置
   const SLIME_RADIUS = 20
   
   // Physics constants
@@ -131,7 +131,7 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     configs.forEach(config => {
       for (let i = 0; i < config.count; i++) {
         const x = 60 + Math.random() * (CANVAS_WIDTH - 120)
-        const y = 200 + Math.random() * 900  // 画面中央～下部に配置
+        const y = 60 + Math.random() * 350  // 画面上部～中央に配置
         targets.push({
           id: id++,
           x,
@@ -412,8 +412,8 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
         }
       })
       
-      // Out of bounds check (画面外も許容、より広い範囲)
-      if (slime.y < -200 || slime.x < -200 || slime.x > CANVAS_WIDTH + 200 || slime.y > CANVAS_HEIGHT + 200) {
+      // Out of bounds check
+      if (slime.y < -50 || slime.x < -50 || slime.x > CANVAS_WIDTH + 50 || slime.y > CANVAS_HEIGHT + 50) {
         slime.active = false
         slime.x = SLIME_START_X
         slime.y = SLIME_START_Y
