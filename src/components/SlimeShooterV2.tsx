@@ -70,12 +70,14 @@ export default function SlimeShooterV2({ onGameEnd, onClose, mode = 'normal' }: 
   const [gameState, setGameState] = useState<'ready' | 'aiming' | 'shooting' | 'ended'>('ready')
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
-  const [attemptsLeft, setAttemptsLeft] = useState(mode === 'infinite' ? 999 : 3)
+  const [attemptsLeft, setAttemptsLeft] = useState(999)  // 全モード無制限
   const [dragStart, setDragStart] = useState<Vector2 | null>(null)
   const [dragCurrent, setDragCurrent] = useState<Vector2 | null>(null)
   const [selectedProjectile, setSelectedProjectile] = useState<ProjectileType>('slime')
+  const [timeLeft, setTimeLeft] = useState(10)  // 本番モード用タイマー
   
   const isInfiniteMode = mode === 'infinite'
+  const isTimedMode = mode === 'normal'  // 本番モード = 10秒制限
   
   // Refs for game state
   const projectileRef = useRef({
@@ -130,14 +132,32 @@ export default function SlimeShooterV2({ onGameEnd, onClose, mode = 'normal' }: 
       }
     }
   }, [])
+
+  // タイマー処理（本番モードのみ）
+  useEffect(() => {
+    if (!isTimedMode || gameState === 'ended') return
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          setGameState('ended')
+          setTimeout(() => onGameEnd(scoreRef.current), 500)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [isTimedMode, gameState, onGameEnd])
   
   // ========== ターゲット初期化 ==========
   function initTargets() {
     const targets: Target[] = []
     const configs = [
-      { emoji: '⭐', points: 50, count: 27 },   // 9 → 27 (3倍)
-      { emoji: '💰', points: 100, count: 36 }, // 12 → 36 (3倍)
-      { emoji: '💎', points: 200, count: 27 }   // 9 → 27 (3倍)
+      { emoji: '⭐', points: 50, count: 54 },   // 27 → 54 (2倍)
+      { emoji: '💰', points: 100, count: 72 }, // 36 → 72 (2倍)
+      { emoji: '💎', points: 200, count: 54 }   // 27 → 54 (2倍)
     ]
     
     let id = 0
@@ -797,14 +817,34 @@ export default function SlimeShooterV2({ onGameEnd, onClose, mode = 'normal' }: 
   
   // ========== 入力処理 ==========
   const handleStart = useCallback((clientX: number, clientY: number) => {
-    if (gameState !== 'ready' || attemptsLeft <= 0) return
-    
     const canvas = canvasRef.current
     if (!canvas) return
     
     const rect = canvas.getBoundingClientRect()
     const x = clientX - rect.left
     const y = clientY - rect.top
+    
+    // 無限モードで既に飛んでいる場合：タップで加速
+    if (isInfiniteMode && projectileRef.current.active) {
+      const slime = projectileRef.current
+      const dx = x - slime.x
+      const dy = y - slime.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      
+      if (dist > 10) {
+        const accelerationForce = 3
+        slime.vx += (dx / dist) * accelerationForce
+        slime.vy += (dy / dist) * accelerationForce
+        slime.wobbleAmplitude = 0.4
+        
+        // 加速エフェクト
+        createParticles(ParticleType.LAUNCH_SPARK, slime.x, slime.y)
+      }
+      return
+    }
+    
+    // 通常の引っ張り開始
+    if (gameState !== 'ready' || attemptsLeft <= 0) return
     
     setDragStart({ x, y })
     setDragCurrent({ x, y })
@@ -813,7 +853,7 @@ export default function SlimeShooterV2({ onGameEnd, onClose, mode = 'normal' }: 
     // タッチ時にブルッと震える
     projectileRef.current.wobbleAmplitude = 0.25
     projectileRef.current.wobblePhase = 0
-  }, [gameState, attemptsLeft])
+  }, [gameState, attemptsLeft, isInfiniteMode])
   
   const handleMove = useCallback((clientX: number, clientY: number) => {
     if (gameState !== 'aiming' || !dragStart) return
@@ -918,13 +958,22 @@ export default function SlimeShooterV2({ onGameEnd, onClose, mode = 'normal' }: 
       }}>
         <div>
           <div style={{ fontSize: '1.3rem', fontWeight: '700' }}>
-            {isInfiniteMode ? '🔄 無限昼食' : '💧 スライムシューター'}
+            {isInfiniteMode ? '🔄 無限昼食' : isTimedMode ? '⏱️ 昼食ゲーム' : '💧 スライムシューター'}
           </div>
-          {!isInfiniteMode && (
-            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>残り: {attemptsLeft}回</div>
+          {isTimedMode && (
+            <div style={{ 
+              fontSize: '1.5rem', 
+              fontWeight: '700',
+              color: timeLeft <= 3 ? '#ef4444' : '#ffd700' 
+            }}>
+              ⏱️ {timeLeft}秒
+            </div>
           )}
           {isInfiniteMode && (
-            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>∞ 跳ね返り続ける！</div>
+            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>∞ タップで加速！</div>
+          )}
+          {mode === 'practice' && (
+            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>練習モード</div>
           )}
         </div>
         <div style={{ textAlign: 'right' }}>

@@ -60,7 +60,7 @@ export default function SlimeGamePracticePage() {
             marginBottom: '1rem'
           }}>
             出勤後、12:00以降に1日1回だけプレイできる特別なゲームです。
-            武器を選んで飛ばし、画面上のターゲットを狙ってスコアを稼ぎましょう！
+            <strong>10秒間</strong>、壁で跳ね返りながら画面上のターゲットを狙ってスコアを稼ぎましょう！
             高得点を獲得すると豪華な報酬がもらえます。
           </p>
           <div style={{
@@ -160,14 +160,14 @@ export default function SlimeGamePracticePage() {
             <>
               <strong style={{ color: '#2f855a' }}>🎯 昼食練習モード</strong>
               <p style={{ marginTop: '0.5rem', marginBottom: 0, color: '#4a5568' }}>
-                本番と同じルールで3回発射。武器の特性やコンボのコツを掴もう！
+                本番と同じ10秒間ルール！壁で跳ね返り続けて高得点を目指そう。時間制限なしで練習可能。
               </p>
             </>
           ) : (
             <>
               <strong style={{ color: '#c05621' }}>🔄 無限昼食モード</strong>
               <p style={{ marginTop: '0.5rem', marginBottom: 0, color: '#4a5568' }}>
-                壁で跳ね返り続ける！ピンボール感覚で延々と楽しめる無限モード。回数制限なし！
+                時間制限なし！タップで加速して遊び続けられる。壁で跳ね返るピンボール感覚で無限に楽しめる！
               </p>
             </>
           )}
@@ -214,8 +214,9 @@ export default function SlimeGamePracticePage() {
             <li><strong>引っ張る</strong>: 画面下部の武器をタップ（クリック）してドラッグ</li>
             <li><strong>狙いを定める</strong>: 引っ張る方向と強さで飛ぶ方向が決まる</li>
             <li><strong>発射</strong>: 指を離すと武器が飛んでいく</li>
+            <li><strong>壁で跳ね返る</strong>: 上下左右の壁で跳ね返り続ける！</li>
             <li><strong>ターゲットに命中</strong>: 画面上の絵文字に当てるとスコアゲット！</li>
-            <li><strong>3回挑戦</strong>: 合計3回発射してハイスコアを目指そう</li>
+            <li><strong>10秒間勝負</strong>: 制限時間内にハイスコアを目指そう（本番のみ）</li>
           </ol>
           <div style={{
             marginTop: '1rem',
@@ -403,7 +404,7 @@ export default function SlimeGamePracticePage() {
                 🎯 密集地帯を狙う
               </h4>
               <p style={{ color: '#4a5568', fontSize: '0.9rem', marginBottom: 0 }}>
-                90個のターゲットが画面に配置されている。密集している場所を狙えば1発で複数ヒット可能。
+                180個のターゲットが画面に配置されている！密集している場所を狙えば1発で複数ヒット可能。
               </p>
             </div>
 
@@ -416,12 +417,21 @@ export default function SlimeGamePracticePage() {
               </p>
             </div>
 
-            <div style={{ background: '#fef5e7', padding: '1rem', borderRadius: '8px', border: '2px solid #f39c12' }}>
-              <h4 style={{ color: '#d68910', marginBottom: '0.5rem' }}>
-                ⚡ 最強コンボ例
+            <div style={{ background: '#fff7ed', padding: '1rem', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+              <h4 style={{ color: '#c05621', marginBottom: '0.5rem' }}>
+                ⏱️ 10秒間で稼ぐコツ（本番）
               </h4>
               <p style={{ color: '#4a5568', fontSize: '0.9rem', marginBottom: 0 }}>
-                円月輪で画面中央の密集地帯を狙う → 行きと戻りで💎を複数ヒット → コンボ×5以上で10,000点超え！
+                最初の発射が重要！壁での跳ね返りを計算して、10秒間ずっとターゲットに当たり続ける軌道を作ろう。
+              </p>
+            </div>
+
+            <div style={{ background: '#fef5e7', padding: '1rem', borderRadius: '8px', border: '2px solid #f39c12' }}>
+              <h4 style={{ color: '#d68910', marginBottom: '0.5rem' }}>
+                🔄 無限モードのタップ加速
+              </h4>
+              <p style={{ color: '#4a5568', fontSize: '0.9rem', marginBottom: 0 }}>
+                飛んでいる武器を画面タップで加速！タップした方向に力が加わる。スピードを保って高得点を狙おう。
               </p>
             </div>
           </div>
