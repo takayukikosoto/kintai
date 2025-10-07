@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
 // ========== 型定義 ==========
+type ProjectileType = 'slime' | 'arrow' | 'boomerang'
+
 interface Vector2 {
   x: number
   y: number
@@ -69,9 +71,11 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   const [attemptsLeft, setAttemptsLeft] = useState(3)
   const [dragStart, setDragStart] = useState<Vector2 | null>(null)
   const [dragCurrent, setDragCurrent] = useState<Vector2 | null>(null)
+  const [selectedProjectile, setSelectedProjectile] = useState<ProjectileType>('slime')
   
   // Refs for game state
-  const slimeRef = useRef({
+  const projectileRef = useRef({
+    type: 'slime' as ProjectileType,
     x: 0,
     y: 0,
     vx: 0,
@@ -82,7 +86,12 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     wobblePhase: 0,
     wobbleAmplitude: 0,
     active: false,
-    trail: [] as Array<{ x: number; y: number; alpha: number; scale: number }>
+    trail: [] as Array<{ x: number; y: number; alpha: number; scale: number }>,
+    // ブーメラン用
+    returnTime: 0,
+    maxDistance: 0,
+    startX: 0,
+    startY: 0
   })
   
   const targetsRef = useRef<Target[]>([])
@@ -332,9 +341,9 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     })
   }
   
-  // ========== スライム更新・描画 ==========
+  // ========== プロジェクタイル更新・描画 ==========
   function updateAndDrawSlime(ctx: CanvasRenderingContext2D, deltaTime: number) {
-    const slime = slimeRef.current
+    const slime = projectileRef.current
     
     // Wobble update (always)
     if (slime.wobbleAmplitude > 0.01) {
@@ -638,8 +647,8 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     setGameState('aiming')
     
     // タッチ時にブルッと震える
-    slimeRef.current.wobbleAmplitude = 0.25
-    slimeRef.current.wobblePhase = 0
+    projectileRef.current.wobbleAmplitude = 0.25
+    projectileRef.current.wobblePhase = 0
   }, [gameState, attemptsLeft])
   
   const handleMove = useCallback((clientX: number, clientY: number) => {
@@ -669,16 +678,29 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
       return
     }
     
-    const power = Math.min(dist / MAX_DRAG_DISTANCE, 1) * 20
+    // 選択されたプロジェクタイルに応じて速度を調整
+    let powerMultiplier = 1
+    if (selectedProjectile === 'arrow') {
+      powerMultiplier = 1.8  // 矢は速い
+    } else if (selectedProjectile === 'boomerang') {
+      powerMultiplier = 1.3  // ブーメランは中間
+    }
+    
+    const power = Math.min(dist / MAX_DRAG_DISTANCE, 1) * 20 * powerMultiplier
     const angle = Math.atan2(-dy, -dx)
     
-    slimeRef.current.x = SLIME_START_X
-    slimeRef.current.y = SLIME_START_Y
-    slimeRef.current.vx = Math.cos(angle) * power
-    slimeRef.current.vy = Math.sin(angle) * power
-    slimeRef.current.active = true
-    slimeRef.current.wobbleAmplitude = 0.3
-    slimeRef.current.trail = []
+    projectileRef.current.type = selectedProjectile
+    projectileRef.current.x = SLIME_START_X
+    projectileRef.current.y = SLIME_START_Y
+    projectileRef.current.vx = Math.cos(angle) * power
+    projectileRef.current.vy = Math.sin(angle) * power
+    projectileRef.current.active = true
+    projectileRef.current.wobbleAmplitude = 0.3
+    projectileRef.current.trail = []
+    projectileRef.current.startX = SLIME_START_X
+    projectileRef.current.startY = SLIME_START_Y
+    projectileRef.current.returnTime = 0
+    projectileRef.current.maxDistance = 0
     
     // Launch effects
     createParticles(ParticleType.LAUNCH_SPARK, SLIME_START_X, SLIME_START_Y)
