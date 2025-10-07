@@ -5,7 +5,7 @@ import { jst, jstRounded } from '../lib/pay'
 import AttendancePanel from '../components/AttendancePanel'
 import TimesheetHistory from '../components/TimesheetHistory'
 import AdminTimesheetView from '../components/AdminTimesheetView'
-import SlimeShooter from '../components/SlimeShooter'
+import SlimeShooterV2 from '../components/SlimeShooterV2'
 import { showToast } from '../components/Toast'
 import type { TimesheetEntry } from '../types'
 
@@ -303,7 +303,7 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
 
       {/* スライムゲームモーダル */}
       {showSlimeGame && (
-        <SlimeShooter
+        <SlimeShooterV2
           onGameEnd={handleGameEnd}
           onClose={() => setShowSlimeGame(false)}
         />
