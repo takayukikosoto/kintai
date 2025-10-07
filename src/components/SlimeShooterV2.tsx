@@ -97,7 +97,7 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   const CANVAS_WIDTH = 400
   const CANVAS_HEIGHT = 600
   const SLIME_START_X = CANVAS_WIDTH / 2
-  const SLIME_START_Y = 550
+  const SLIME_START_Y = 500  // 550 → 500に変更（50px上に）
   const SLIME_RADIUS = 20
   
   // Physics constants
@@ -336,6 +336,12 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
   function updateAndDrawSlime(ctx: CanvasRenderingContext2D, deltaTime: number) {
     const slime = slimeRef.current
     
+    // Wobble update (always)
+    if (slime.wobbleAmplitude > 0.01) {
+      slime.wobblePhase += WOBBLE_FREQUENCY * deltaTime
+      slime.wobbleAmplitude *= 0.92
+    }
+    
     if (slime.active) {
       // Apply physics
       slime.vy += GRAVITY * deltaTime * 60
@@ -427,10 +433,38 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     ctx.globalAlpha = 1
     
     // Draw slime
-    const displayX = slime.active ? slime.x : SLIME_START_X
-    const displayY = slime.active ? slime.y : SLIME_START_Y
+    let displayX = slime.active ? slime.x : SLIME_START_X
+    let displayY = slime.active ? slime.y : SLIME_START_Y
+    let displayScaleX = slime.active ? slime.scaleX : 1
+    let displayScaleY = slime.active ? slime.scaleY : 1
+    let displayRotation = slime.active ? slime.rotation : 0
     
-    drawSlimeShape(ctx, displayX, displayY, SLIME_RADIUS, slime.scaleX, slime.scaleY, slime.rotation)
+    // 引っ張り中の変形と移動
+    if (gameState === 'aiming' && dragCurrent) {
+      const dx = dragCurrent.x - SLIME_START_X
+      const dy = dragCurrent.y - SLIME_START_Y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      const stretchAmount = Math.min(dist / MAX_DRAG_DISTANCE, 1)
+      
+      // 引っ張り方向に伸びる
+      const angle = Math.atan2(dy, dx)
+      displayRotation = angle
+      displayScaleX = 1 + stretchAmount * 0.8  // 引っ張り方向に伸びる
+      displayScaleY = 1 - stretchAmount * 0.4  // 垂直方向は縮む
+      
+      // スライムが引っ張り方向に少し移動（バネ効果）
+      displayX = SLIME_START_X + dx * 0.3
+      displayY = SLIME_START_Y + dy * 0.3
+    }
+    
+    // Wobbleを適用
+    if (slime.wobbleAmplitude > 0.01) {
+      const wobble = Math.sin(slime.wobblePhase) * slime.wobbleAmplitude
+      displayScaleX += wobble
+      displayScaleY -= wobble
+    }
+    
+    drawSlimeShape(ctx, displayX, displayY, SLIME_RADIUS, displayScaleX, displayScaleY, displayRotation)
   }
   
   // ========== スライム形状描画 ==========
@@ -585,6 +619,10 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     setDragStart({ x, y })
     setDragCurrent({ x, y })
     setGameState('aiming')
+    
+    // タッチ時にブルッと震える
+    slimeRef.current.wobbleAmplitude = 0.25
+    slimeRef.current.wobblePhase = 0
   }, [gameState, attemptsLeft])
   
   const handleMove = useCallback((clientX: number, clientY: number) => {
