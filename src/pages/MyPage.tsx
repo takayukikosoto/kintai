@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import UserSettings from '../components/UserSettings'
+import LotteryHistory from '../components/LotteryHistory'
 
 interface MyPageProps {
   userId: string
@@ -59,10 +60,13 @@ export default function MyPage({ userId, userEmail, onDefaultRateChange }: MyPag
 
       <UserSettings userId={userId} userEmail={userEmail} onDefaultRateChange={onDefaultRateChange} />
 
+      <LotteryHistory userId={userId} />
+
       <div className="card">
         <h2>ℹ️ 使い方</h2>
         <ul style={{ lineHeight: '1.8' }}>
           <li>✓ 上のQRコードを管理者端末でスキャンすると打刻できます</li>
+          <li>✓ 出勤時に自動で抽選が実行されます（1日2回: 午前・午後）</li>
           <li>✓ 基本時給を設定すると、毎回の入力が不要になります</li>
           <li>✓ 名前を設定すると、管理画面で識別しやすくなります</li>
         </ul>
