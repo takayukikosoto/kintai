@@ -6,6 +6,7 @@ import { auth } from './firebase'
 import Navigation from './components/Navigation'
 import HomePage from './pages/HomePage'
 import MyPage from './pages/MyPage'
+import SlimeGamePracticePage from './pages/SlimeGamePracticePage'
 import AdminScannerPage from './pages/AdminScannerPage'
 import AdminContinuousScannerPage from './pages/AdminContinuousScannerPage'
 import AdminLotteryPage from './pages/AdminLotteryPage'
@@ -164,6 +165,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage userId={user.uid} defaultRate={defaultRate} isAdmin={isAdmin} />} />
           <Route path="/mypage" element={<MyPage userId={user.uid} userEmail={user.email || ''} onDefaultRateChange={setDefaultRate} />} />
+          <Route path="/slime-practice" element={<SlimeGamePracticePage />} />
           <Route path="/admin-scanner" element={<AdminScannerPage />} />
           <Route path="/admin-continuous-scanner" element={
             isAdmin ? <AdminContinuousScannerPage /> : <div className="card"><h2>⚠️ アクセス拒否</h2><p>このページは管理者専用です</p></div>

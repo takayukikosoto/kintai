@@ -35,12 +35,6 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
   }, [userId])
 
   async function checkCanPlayGame() {
-    // 🚧 DEBUG MODE: 制限を一時的に無効化
-    // TODO: デバッグ後に下記のコメントを外して制限を戻す
-    setCanPlayGame(true)
-    return
-
-    /* 本番用の制限コード（デバッグ後に有効化）
     try {
       const now = new Date()
       const hour = now.getHours()
@@ -70,7 +64,6 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
     } catch (error) {
       console.error('ゲーム可否チェックエラー:', error)
     }
-    */
   }
 
   async function handleGameEnd(score: number) {
@@ -289,6 +282,44 @@ export default function HomePage({ userId, defaultRate, isAdmin = false }: HomeP
               textAlign: 'center'
             }}>
               スライムを飛ばして得点ゲット！1日1回限定
+            </div>
+          </div>
+        )}
+
+        {/* 練習ページへのリンク */}
+        {currentStatus.status === 'working' && (
+          <div style={{ marginTop: '12px', textAlign: 'center' }}>
+            <a
+              href="/slime-practice"
+              style={{
+                display: 'inline-block',
+                padding: '12px 24px',
+                background: '#f7fafc',
+                color: '#667eea',
+                fontSize: '1rem',
+                fontWeight: '600',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                border: '2px solid #667eea',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#667eea'
+                e.currentTarget.style.color = 'white'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f7fafc'
+                e.currentTarget.style.color = '#667eea'
+              }}
+            >
+              🎮 昼食ゲーム練習場へ
+            </a>
+            <div style={{
+              marginTop: '6px',
+              fontSize: '0.75rem',
+              color: '#a0aec0'
+            }}>
+              制限なし・何度でもプレイ可能
             </div>
           </div>
         )}
