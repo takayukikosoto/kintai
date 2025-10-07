@@ -13,7 +13,7 @@ export default function AttendancePanel({ userId, defaultRate }: AttendancePanel
   return (
     <div className="card">
       <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ marginBottom: '1rem' }}>📝 勤怠登録</h2>
+        <h2 style={{ marginBottom: '1rem' }}>📝 打刻・申請</h2>
         <div style={{ 
           display: 'flex', 
           gap: '8px',

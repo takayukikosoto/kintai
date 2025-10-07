@@ -23,7 +23,7 @@ interface PayrollConfig {
 }
 
 const DEFAULT_CONFIG: Required<PayrollConfig> = {
-  roundTo: 15,
+  roundTo: 10,
   overtimeRate: 1.25,
   lateNightRate: 1.25,
   holidayRate: 1.35,
@@ -33,10 +33,29 @@ const DEFAULT_CONFIG: Required<PayrollConfig> = {
 }
 
 /**
- * 15分単位に丸める（切り上げ）
+ * 10分単位に丸める（四捨五入）
+ * 例: 9:55〜10:04 → 10:00
  */
 function roundToNearest(minutes: number, roundTo: number): number {
-  return Math.ceil(minutes / roundTo) * roundTo
+  return Math.round(minutes / roundTo) * roundTo
+}
+
+/**
+ * ISO時刻を10分単位に丸めた表示用時刻に変換
+ * 例: "2025-10-07 09:57:30" → "2025-10-07 10:00"
+ */
+export function jstRounded(isoString: string, roundTo: number = 10): string {
+  const d = dayjs(isoString).tz(JST)
+  const totalMinutes = d.hour() * 60 + d.minute()
+  const roundedMinutes = Math.round(totalMinutes / roundTo) * roundTo
+  const roundedHour = Math.floor(roundedMinutes / 60)
+  const roundedMin = roundedMinutes % 60
+  
+  return d
+    .hour(roundedHour)
+    .minute(roundedMin)
+    .second(0)
+    .format('YYYY-MM-DD HH:mm')
 }
 
 /**
