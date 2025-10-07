@@ -352,31 +352,70 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     }
     
     if (slime.active) {
-      // Apply physics
-      slime.vy += GRAVITY * deltaTime * 60
-      slime.vx *= AIR_RESISTANCE
-      slime.vy *= AIR_RESISTANCE
+      // プロジェクタイルタイプ別の物理演算
+      if (slime.type === 'arrow') {
+        // 矢：重力の影響少なめ、空気抵抗少なめ（貫通感）
+        slime.vy += GRAVITY * 0.3 * deltaTime * 60
+        slime.vx *= 0.998
+        slime.vy *= 0.998
+      } else if (slime.type === 'boomerang') {
+        // ブーメラン：戻ってくる動き
+        slime.returnTime += deltaTime
+        const currentDist = distance(slime.x, slime.y, slime.startX, slime.startY)
+        slime.maxDistance = Math.max(slime.maxDistance, currentDist)
+        
+        // 一定距離または時間で戻り始める
+        if (slime.returnTime > 1.5 || currentDist > 400) {
+          const returnAngle = Math.atan2(slime.startY - slime.y, slime.startX - slime.x)
+          const returnForce = 0.5
+          slime.vx += Math.cos(returnAngle) * returnForce
+          slime.vy += Math.sin(returnAngle) * returnForce
+        }
+        
+        slime.vy += GRAVITY * 0.2 * deltaTime * 60
+        slime.vx *= 0.99
+        slime.vy *= 0.99
+      } else {
+        // スライム：通常の物理
+        slime.vy += GRAVITY * deltaTime * 60
+        slime.vx *= AIR_RESISTANCE
+        slime.vy *= AIR_RESISTANCE
+      }
       
       slime.x += slime.vx * deltaTime * 60
       slime.y += slime.vy * deltaTime * 60
       
-      // Rotation based on velocity
+      // Rotation
       const speed = Math.sqrt(slime.vx ** 2 + slime.vy ** 2)
-      slime.rotation += (speed / 10) * deltaTime * 60 * 0.1
+      if (slime.type === 'arrow') {
+        // 矢：速度方向を向く
+        slime.rotation = Math.atan2(slime.vy, slime.vx)
+      } else if (slime.type === 'boomerang') {
+        // ブーメラン：高速回転
+        slime.rotation += deltaTime * 60 * 0.3
+      } else {
+        // スライム：通常回転
+        slime.rotation += (speed / 10) * deltaTime * 60 * 0.1
+      }
       
-      // Squash and stretch
-      const stretchFactor = Math.min(speed / 15, 1.5)
-      slime.scaleX = 1 + stretchFactor * 0.3
-      slime.scaleY = 1 - stretchFactor * 0.2
-      
-      // Wobble
-      if (slime.wobbleAmplitude > 0.01) {
-        slime.wobblePhase += WOBBLE_FREQUENCY * deltaTime
-        slime.wobbleAmplitude *= 0.92
+      // Squash and stretch (スライムのみ)
+      if (slime.type === 'slime') {
+        const stretchFactor = Math.min(speed / 15, 1.5)
+        slime.scaleX = 1 + stretchFactor * 0.3
+        slime.scaleY = 1 - stretchFactor * 0.2
         
-        const wobble = Math.sin(slime.wobblePhase) * slime.wobbleAmplitude
-        slime.scaleX += wobble
-        slime.scaleY -= wobble
+        // Wobble
+        if (slime.wobbleAmplitude > 0.01) {
+          slime.wobblePhase += WOBBLE_FREQUENCY * deltaTime
+          slime.wobbleAmplitude *= 0.92
+          
+          const wobble = Math.sin(slime.wobblePhase) * slime.wobbleAmplitude
+          slime.scaleX += wobble
+          slime.scaleY -= wobble
+        }
+      } else {
+        slime.scaleX = 1
+        slime.scaleY = 1
       }
       
       // Trail
@@ -452,9 +491,9 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     }
     
     // Draw trail
-    slime.trail.forEach(t => {
+    slime.trail.forEach((t: any) => {
       ctx.globalAlpha = t.alpha
-      drawSlimeShape(ctx, t.x, t.y, SLIME_RADIUS * t.scale, 1, 1, 0)
+      drawProjectile(ctx, slime.type, t.x, t.y, SLIME_RADIUS * t.scale, 1, 1, 0)
     })
     ctx.globalAlpha = 1
     
@@ -490,12 +529,14 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
       displayScaleY -= wobble
     }
     
-    drawSlimeShape(ctx, displayX, displayY, SLIME_RADIUS, displayScaleX, displayScaleY, displayRotation)
+    const projectileType = slime.active ? slime.type : selectedProjectile
+    drawProjectile(ctx, projectileType, displayX, displayY, SLIME_RADIUS, displayScaleX, displayScaleY, displayRotation)
   }
   
-  // ========== スライム形状描画 ==========
-  function drawSlimeShape(
+  // ========== プロジェクタイル描画 ==========
+  function drawProjectile(
     ctx: CanvasRenderingContext2D,
+    type: ProjectileType,
     x: number,
     y: number,
     radius: number,
@@ -507,28 +548,92 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
     ctx.translate(x, y)
     ctx.rotate(rotation)
     
-    // Gradient
-    const gradient = ctx.createRadialGradient(
-      -radius * 0.3, -radius * 0.3, 0,
-      0, 0, radius
-    )
-    gradient.addColorStop(0, '#93c5fd')
-    gradient.addColorStop(0.6, '#60a5fa')
-    gradient.addColorStop(1, '#3b82f6')
-    
-    // Body
-    ctx.beginPath()
-    ctx.ellipse(0, 0, radius * scaleX, radius * scaleY, 0, 0, Math.PI * 2)
-    ctx.fillStyle = gradient
-    ctx.fill()
-    
-    // Highlight
-    ctx.globalAlpha = 0.6
-    ctx.beginPath()
-    ctx.ellipse(-radius * 0.25, -radius * 0.25, radius * 0.4, radius * 0.3, -0.3, 0, Math.PI * 2)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-    ctx.fill()
-    ctx.globalAlpha = 1
+    if (type === 'slime') {
+      // スライム
+      const gradient = ctx.createRadialGradient(
+        -radius * 0.3, -radius * 0.3, 0,
+        0, 0, radius
+      )
+      gradient.addColorStop(0, '#93c5fd')
+      gradient.addColorStop(0.6, '#60a5fa')
+      gradient.addColorStop(1, '#3b82f6')
+      
+      ctx.beginPath()
+      ctx.ellipse(0, 0, radius * scaleX, radius * scaleY, 0, 0, Math.PI * 2)
+      ctx.fillStyle = gradient
+      ctx.fill()
+      
+      // Highlight
+      ctx.globalAlpha = 0.6
+      ctx.beginPath()
+      ctx.ellipse(-radius * 0.25, -radius * 0.25, radius * 0.4, radius * 0.3, -0.3, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      ctx.fill()
+      ctx.globalAlpha = 1
+    } else if (type === 'arrow') {
+      // 矢
+      ctx.fillStyle = '#fbbf24'
+      ctx.strokeStyle = '#f59e0b'
+      ctx.lineWidth = 2
+      
+      // 矢じり
+      ctx.beginPath()
+      ctx.moveTo(radius * 1.5, 0)
+      ctx.lineTo(-radius * 0.5, -radius * 0.8)
+      ctx.lineTo(-radius * 0.5, radius * 0.8)
+      ctx.closePath()
+      ctx.fill()
+      ctx.stroke()
+      
+      // 矢の柄
+      ctx.fillStyle = '#92400e'
+      ctx.fillRect(-radius * 1.5, -radius * 0.2, radius, radius * 0.4)
+      
+      // 羽
+      ctx.fillStyle = '#ef4444'
+      ctx.beginPath()
+      ctx.moveTo(-radius * 1.5, 0)
+      ctx.lineTo(-radius * 2, -radius * 0.5)
+      ctx.lineTo(-radius * 1.5, -radius * 0.3)
+      ctx.closePath()
+      ctx.fill()
+      
+      ctx.beginPath()
+      ctx.moveTo(-radius * 1.5, 0)
+      ctx.lineTo(-radius * 2, radius * 0.5)
+      ctx.lineTo(-radius * 1.5, radius * 0.3)
+      ctx.closePath()
+      ctx.fill()
+    } else if (type === 'boomerang') {
+      // ブーメラン（円月輪）
+      const gradient = ctx.createLinearGradient(-radius, 0, radius, 0)
+      gradient.addColorStop(0, '#8b5cf6')
+      gradient.addColorStop(0.5, '#a78bfa')
+      gradient.addColorStop(1, '#8b5cf6')
+      
+      // 外側の円
+      ctx.fillStyle = gradient
+      ctx.beginPath()
+      ctx.arc(0, 0, radius * 1.3, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // 内側の穴
+      ctx.fillStyle = '#1a202c'
+      ctx.beginPath()
+      ctx.arc(0, 0, radius * 0.6, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // 刃のエフェクト
+      ctx.strokeStyle = '#c4b5fd'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(0, 0, radius * 1.3, 0, Math.PI * 2)
+      ctx.stroke()
+      
+      ctx.beginPath()
+      ctx.arc(0, 0, radius * 0.6, 0, Math.PI * 2)
+      ctx.stroke()
+    }
     
     ctx.restore()
   }
@@ -764,6 +869,76 @@ export default function SlimeShooterV2({ onGameEnd, onClose }: SlimeShooterV2Pro
           )}
         </div>
       </div>
+
+      {/* プロジェクタイル選択 */}
+      {gameState !== 'ended' && (
+        <div style={{
+          background: '#2d3748',
+          padding: '12px',
+          width: CANVAS_WIDTH,
+          display: 'flex',
+          gap: '8px',
+          justifyContent: 'center'
+        }}>
+          <button
+            onClick={() => setSelectedProjectile('slime')}
+            disabled={gameState !== 'ready'}
+            style={{
+              padding: '8px 16px',
+              background: selectedProjectile === 'slime' 
+                ? 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)'
+                : '#4a5568',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: gameState === 'ready' ? 'pointer' : 'not-allowed',
+              opacity: gameState === 'ready' ? 1 : 0.5
+            }}
+          >
+            💧 スライム
+          </button>
+          <button
+            onClick={() => setSelectedProjectile('arrow')}
+            disabled={gameState !== 'ready'}
+            style={{
+              padding: '8px 16px',
+              background: selectedProjectile === 'arrow' 
+                ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
+                : '#4a5568',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: gameState === 'ready' ? 'pointer' : 'not-allowed',
+              opacity: gameState === 'ready' ? 1 : 0.5
+            }}
+          >
+            🏹 矢
+          </button>
+          <button
+            onClick={() => setSelectedProjectile('boomerang')}
+            disabled={gameState !== 'ready'}
+            style={{
+              padding: '8px 16px',
+              background: selectedProjectile === 'boomerang' 
+                ? 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)'
+                : '#4a5568',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: gameState === 'ready' ? 'pointer' : 'not-allowed',
+              opacity: gameState === 'ready' ? 1 : 0.5
+            }}
+          >
+            ⭕ 円月輪
+          </button>
+        </div>
+      )}
 
       {/* Canvas */}
       <canvas
