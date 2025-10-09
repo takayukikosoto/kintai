@@ -40,17 +40,27 @@ export default function AdminContinuousScannerPage() {
       const reader = new BrowserMultiFormatReader()
       readerRef.current = reader
 
-      const videoInputDevices = await reader.listVideoInputDevices()
-      const selectedDeviceId = videoInputDevices[0]?.deviceId
-
-      if (!selectedDeviceId) {
+      // モバイル対応: まずカメラアクセス権限を取得
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const videoDevices = devices.filter(device => device.kind === 'videoinput')
+      
+      if (videoDevices.length === 0) {
         showToast('カメラが見つかりません', 'error')
         setScanning(false)
         return
       }
 
-      // 連続スキャンモード
-      reader.decodeFromVideoDevice(selectedDeviceId, videoRef.current!, async (result, err) => {
+      // カメラストリームを取得（モバイルでは背面カメラを優先）
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      })
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
+
+      // 連続スキャンモード（deviceId=nullでストリームから読み取り）
+      reader.decodeFromVideoDevice(null, videoRef.current!, async (result, err) => {
         if (result) {
           const now = Date.now()
           const scannedText = result.getText()
@@ -79,6 +89,12 @@ export default function AdminContinuousScannerPage() {
     if (readerRef.current) {
       readerRef.current.reset()
       readerRef.current = null
+    }
+    // ストリームを停止
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream
+      stream.getTracks().forEach(track => track.stop())
+      videoRef.current.srcObject = null
     }
     setScanning(false)
   }
