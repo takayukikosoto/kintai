@@ -22,6 +22,7 @@ export default function AdminContinuousScannerPage() {
   const [logs, setLogs] = useState<ScanLog[]>([])
   const [lotteryPrize, setLotteryPrize] = useState<Prize | null>(null)
   const [showLottery, setShowLottery] = useState(false)
+  const [mode, setMode] = useState<'auto' | 'checkin' | 'checkout'>('auto')
   const videoRef = useRef<HTMLVideoElement>(null)
   const readerRef = useRef<BrowserMultiFormatReader | null>(null)
   const lastScanRef = useRef<string>('')
@@ -119,8 +120,39 @@ export default function AdminContinuousScannerPage() {
       let action: 'checkin' | 'checkout'
       let success = true
 
-      if (snap.empty) {
-        // 出勤記録がない → 出勤
+      // モードに応じた処理
+      if (mode === 'auto') {
+        // 自動判定モード
+        if (snap.empty) {
+          // 出勤記録がない → 出勤
+          await clockIn(userId)
+          action = 'checkin'
+          showToast(`✓ 出勤: ${userEmail}`, 'success')
+
+          // 抽選を実行
+          try {
+            const slot = getCurrentSlot()
+            if (slot) {
+              const prize = await executeLottery(userId, slot)
+              if (prize) {
+                // 抽選に当たった！
+                setLotteryPrize(prize)
+                setShowLottery(true)
+              }
+            }
+          } catch (error: any) {
+            console.error('抽選エラー:', error)
+            // 抽選エラーは無視（出勤処理は成功）
+          }
+        } else {
+          // 出勤記録がある → 退勤
+          const activeDoc = snap.docs[0]
+          const payAmount = await clockOut(userId, activeDoc.id, activeDoc.data() as any)
+          action = 'checkout'
+          showToast(`✓ 退勤: ${userEmail} (¥${payAmount?.toLocaleString()})`, 'success')
+        }
+      } else if (mode === 'checkin') {
+        // 出勤のみモード
         await clockIn(userId)
         action = 'checkin'
         showToast(`✓ 出勤: ${userEmail}`, 'success')
@@ -131,17 +163,18 @@ export default function AdminContinuousScannerPage() {
           if (slot) {
             const prize = await executeLottery(userId, slot)
             if (prize) {
-              // 抽選に当たった！
               setLotteryPrize(prize)
               setShowLottery(true)
             }
           }
         } catch (error: any) {
           console.error('抽選エラー:', error)
-          // 抽選エラーは無視（出勤処理は成功）
         }
       } else {
-        // 出勤記録がある → 退勤
+        // 退勤のみモード
+        if (snap.empty) {
+          throw new Error('出勤記録が見つかりません')
+        }
         const activeDoc = snap.docs[0]
         const payAmount = await clockOut(userId, activeDoc.id, activeDoc.data() as any)
         action = 'checkout'
@@ -216,6 +249,77 @@ export default function AdminContinuousScannerPage() {
           カメラが常時起動し、QRコードを自動的に読み取ります
         </p>
 
+        {/* モード選択 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+            打刻モード
+          </label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setMode('auto')}
+              disabled={scanning}
+              style={{
+                flex: 1,
+                background: mode === 'auto' ? '#667eea' : '#e2e8f0',
+                color: mode === 'auto' ? 'white' : '#4a5568',
+                padding: '10px 16px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: scanning ? 'not-allowed' : 'pointer',
+                opacity: scanning ? 0.6 : 1,
+                transition: 'all 0.2s'
+              }}
+            >
+              🔄 自動判定
+            </button>
+            <button
+              onClick={() => setMode('checkin')}
+              disabled={scanning}
+              style={{
+                flex: 1,
+                background: mode === 'checkin' ? '#48bb78' : '#e2e8f0',
+                color: mode === 'checkin' ? 'white' : '#4a5568',
+                padding: '10px 16px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: scanning ? 'not-allowed' : 'pointer',
+                opacity: scanning ? 0.6 : 1,
+                transition: 'all 0.2s'
+              }}
+            >
+              🟢 出勤のみ
+            </button>
+            <button
+              onClick={() => setMode('checkout')}
+              disabled={scanning}
+              style={{
+                flex: 1,
+                background: mode === 'checkout' ? '#f56565' : '#e2e8f0',
+                color: mode === 'checkout' ? 'white' : '#4a5568',
+                padding: '10px 16px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: scanning ? 'not-allowed' : 'pointer',
+                opacity: scanning ? 0.6 : 1,
+                transition: 'all 0.2s'
+              }}
+            >
+              🔴 退勤のみ
+            </button>
+          </div>
+          <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#718096', lineHeight: '1.5' }}>
+            {mode === 'auto' && '🔄 自動判定: 出勤記録がない場合は出勤、ある場合は退勤'}
+            {mode === 'checkin' && '🟢 出勤モード: 常に出勤として記録（複数出勤可能）'}
+            {mode === 'checkout' && '🔴 退勤モード: 常に退勤として記録（出勤記録必須）'}
+          </div>
+        </div>
+
         {!scanning ? (
           <button 
             onClick={startScanning}
@@ -223,8 +327,16 @@ export default function AdminContinuousScannerPage() {
               width: '100%', 
               padding: '16px', 
               fontSize: '1.1rem',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white',
+              fontWeight: '700',
+              cursor: 'pointer',
+              transition: 'transform 0.2s'
             }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
             📹 スキャン開始
           </button>
