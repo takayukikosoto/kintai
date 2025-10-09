@@ -23,6 +23,7 @@ export default function AdminContinuousScannerPage() {
   const [lotteryPrize, setLotteryPrize] = useState<Prize | null>(null)
   const [showLottery, setShowLottery] = useState(false)
   const [mode, setMode] = useState<'auto' | 'checkin' | 'checkout'>('auto')
+  const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user')
   const videoRef = useRef<HTMLVideoElement>(null)
   const readerRef = useRef<BrowserMultiFormatReader | null>(null)
   const lastScanRef = useRef<string>('')
@@ -51,9 +52,9 @@ export default function AdminContinuousScannerPage() {
         return
       }
 
-      // カメラストリームを取得（モバイルでは前面カメラ/インカメを優先）
+      // カメラストリームを取得
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' } 
+        video: { facingMode: cameraFacing } 
       })
 
       if (videoRef.current) {
@@ -98,6 +99,17 @@ export default function AdminContinuousScannerPage() {
       videoRef.current.srcObject = null
     }
     setScanning(false)
+  }
+
+  // カメラ切り替え
+  async function switchCamera() {
+    if (!scanning) return
+    
+    stopScanning()
+    // 少し待ってから新しいカメラで再起動
+    setTimeout(() => {
+      startScanning()
+    }, 100)
   }
 
   async function handleScan(qrData: string) {
@@ -317,6 +329,59 @@ export default function AdminContinuousScannerPage() {
             {mode === 'auto' && '🔄 自動判定: 出勤記録がない場合は出勤、ある場合は退勤'}
             {mode === 'checkin' && '🟢 出勤モード: 常に出勤として記録（複数出勤可能）'}
             {mode === 'checkout' && '🔴 退勤モード: 常に退勤として記録（出勤記録必須）'}
+          </div>
+        </div>
+
+        {/* カメラ選択 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+            使用カメラ
+          </label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => {
+                setCameraFacing('user')
+                if (scanning) switchCamera()
+              }}
+              style={{
+                flex: 1,
+                background: cameraFacing === 'user' ? '#8b5cf6' : '#e2e8f0',
+                color: cameraFacing === 'user' ? 'white' : '#4a5568',
+                padding: '10px 16px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              🤳 前面（インカメラ）
+            </button>
+            <button
+              onClick={() => {
+                setCameraFacing('environment')
+                if (scanning) switchCamera()
+              }}
+              style={{
+                flex: 1,
+                background: cameraFacing === 'environment' ? '#0891b2' : '#e2e8f0',
+                color: cameraFacing === 'environment' ? 'white' : '#4a5568',
+                padding: '10px 16px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              📷 背面（アウトカメラ）
+            </button>
+          </div>
+          <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#718096', lineHeight: '1.5' }}>
+            {cameraFacing === 'user' && '🤳 前面カメラ: 画面を見ながらQRコードをかざせます'}
+            {cameraFacing === 'environment' && '📷 背面カメラ: QRコードを直接撮影できます'}
           </div>
         </div>
 
