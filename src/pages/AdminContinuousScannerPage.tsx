@@ -24,6 +24,8 @@ export default function AdminContinuousScannerPage() {
   const [showLottery, setShowLottery] = useState(false)
   const [mode, setMode] = useState<'auto' | 'checkin' | 'checkout'>('auto')
   const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user')
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([])
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('')
   const videoRef = useRef<HTMLVideoElement>(null)
   const readerRef = useRef<BrowserMultiFormatReader | null>(null)
   const lastScanRef = useRef<string>('')
@@ -42,7 +44,8 @@ export default function AdminContinuousScannerPage() {
       const reader = new BrowserMultiFormatReader()
       readerRef.current = reader
 
-      // モバイル対応: まずカメラアクセス権限を取得
+      // カメラアクセス権限を取得してからデバイスを列挙
+      await navigator.mediaDevices.getUserMedia({ video: true })
       const devices = await navigator.mediaDevices.enumerateDevices()
       const videoDevices = devices.filter(device => device.kind === 'videoinput')
       
@@ -52,17 +55,48 @@ export default function AdminContinuousScannerPage() {
         return
       }
 
-      // カメラストリームを取得
+      // 利用可能なカメラを保存
+      setAvailableCameras(videoDevices)
+      console.log('利用可能なカメラ:', videoDevices)
+
+      // デバイスIDを選択
+      let deviceId = selectedDeviceId
+      
+      if (!deviceId) {
+        // 初回: facingModeに基づいて選択
+        if (cameraFacing === 'user') {
+          // 前面カメラを探す（ラベルに"front"や"user"が含まれるもの）
+          const frontCamera = videoDevices.find(d => 
+            d.label.toLowerCase().includes('front') || 
+            d.label.toLowerCase().includes('user') ||
+            d.label.toLowerCase().includes('face')
+          )
+          deviceId = frontCamera?.deviceId || videoDevices[0].deviceId
+        } else {
+          // 背面カメラを探す（ラベルに"back"や"environment"が含まれるもの）
+          const backCamera = videoDevices.find(d => 
+            d.label.toLowerCase().includes('back') || 
+            d.label.toLowerCase().includes('environment') ||
+            d.label.toLowerCase().includes('rear')
+          )
+          deviceId = backCamera?.deviceId || videoDevices[videoDevices.length - 1].deviceId
+        }
+        setSelectedDeviceId(deviceId)
+      }
+
+      console.log('選択されたカメラ:', videoDevices.find(d => d.deviceId === deviceId)?.label)
+
+      // 選択したデバイスIDでストリームを取得
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: cameraFacing } 
+        video: { deviceId: { exact: deviceId } } 
       })
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
       }
 
-      // 連続スキャンモード（deviceId=nullでストリームから読み取り）
-      reader.decodeFromVideoDevice(null, videoRef.current!, async (result, err) => {
+      // 連続スキャンモード
+      reader.decodeFromVideoDevice(deviceId, videoRef.current!, async (result, err) => {
         if (result) {
           const now = Date.now()
           const scannedText = result.getText()
@@ -102,14 +136,40 @@ export default function AdminContinuousScannerPage() {
   }
 
   // カメラ切り替え
-  async function switchCamera() {
-    if (!scanning) return
+  async function switchCamera(newFacing: 'user' | 'environment') {
+    setCameraFacing(newFacing)
     
-    stopScanning()
-    // 少し待ってから新しいカメラで再起動
-    setTimeout(() => {
-      startScanning()
-    }, 100)
+    // 新しいカメラデバイスを選択
+    if (availableCameras.length > 0) {
+      let newDeviceId = ''
+      
+      if (newFacing === 'user') {
+        const frontCamera = availableCameras.find(d => 
+          d.label.toLowerCase().includes('front') || 
+          d.label.toLowerCase().includes('user') ||
+          d.label.toLowerCase().includes('face')
+        )
+        newDeviceId = frontCamera?.deviceId || availableCameras[0].deviceId
+      } else {
+        const backCamera = availableCameras.find(d => 
+          d.label.toLowerCase().includes('back') || 
+          d.label.toLowerCase().includes('environment') ||
+          d.label.toLowerCase().includes('rear')
+        )
+        newDeviceId = backCamera?.deviceId || availableCameras[availableCameras.length - 1].deviceId
+      }
+      
+      setSelectedDeviceId(newDeviceId)
+      console.log('カメラ切り替え:', availableCameras.find(d => d.deviceId === newDeviceId)?.label)
+    }
+    
+    if (scanning) {
+      stopScanning()
+      // 少し待ってから新しいカメラで再起動
+      setTimeout(() => {
+        startScanning()
+      }, 100)
+    }
   }
 
   async function handleScan(qrData: string) {
@@ -339,10 +399,7 @@ export default function AdminContinuousScannerPage() {
           </label>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
-              onClick={() => {
-                setCameraFacing('user')
-                if (scanning) switchCamera()
-              }}
+              onClick={() => switchCamera('user')}
               style={{
                 flex: 1,
                 background: cameraFacing === 'user' ? '#8b5cf6' : '#e2e8f0',
@@ -359,10 +416,7 @@ export default function AdminContinuousScannerPage() {
               🤳 前面（インカメラ）
             </button>
             <button
-              onClick={() => {
-                setCameraFacing('environment')
-                if (scanning) switchCamera()
-              }}
+              onClick={() => switchCamera('environment')}
               style={{
                 flex: 1,
                 background: cameraFacing === 'environment' ? '#0891b2' : '#e2e8f0',
