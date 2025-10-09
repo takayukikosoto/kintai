@@ -51,9 +51,9 @@ export default function AdminContinuousScannerPage() {
         return
       }
 
-      // カメラストリームを取得（モバイルでは背面カメラを優先）
+      // カメラストリームを取得（モバイルでは前面カメラ/インカメを優先）
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+        video: { facingMode: 'user' } 
       })
 
       if (videoRef.current) {
