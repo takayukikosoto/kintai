@@ -35,6 +35,9 @@ export class GameCore {
   private keys: Set<string>
   private lastFrameTime: number
   
+  private touchTarget: { x: number; y: number } | null
+  private isTouching: boolean
+  
   private waveQueue: Array<{ time: number; wave: Wave; spawned: boolean }>
   
   private onGameOver: (stats: GameStats) => void
@@ -76,6 +79,9 @@ export class GameCore {
     this.keys = new Set()
     this.lastFrameTime = performance.now()
     
+    this.touchTarget = null
+    this.isTouching = false
+    
     // ウェーブキューを初期化
     this.waveQueue = this.stageData.waves.map(wave => ({
       time: wave.time,
@@ -88,6 +94,7 @@ export class GameCore {
   }
 
   private setupEventListeners() {
+    // キーボード操作
     window.addEventListener('keydown', (e) => {
       this.keys.add(e.key.toLowerCase())
       
@@ -100,6 +107,59 @@ export class GameCore {
 
     window.addEventListener('keyup', (e) => {
       this.keys.delete(e.key.toLowerCase())
+    })
+
+    // タッチ操作
+    this.canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault()
+      const touch = e.touches[0]
+      const rect = this.canvas.getBoundingClientRect()
+      this.touchTarget = {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      }
+      this.isTouching = true
+    })
+
+    this.canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault()
+      if (!this.isTouching) return
+      const touch = e.touches[0]
+      const rect = this.canvas.getBoundingClientRect()
+      this.touchTarget = {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      }
+    })
+
+    this.canvas.addEventListener('touchend', (e) => {
+      e.preventDefault()
+      this.isTouching = false
+      this.touchTarget = null
+    })
+
+    // マウス操作（PC用）
+    this.canvas.addEventListener('mousedown', (e) => {
+      const rect = this.canvas.getBoundingClientRect()
+      this.touchTarget = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      }
+      this.isTouching = true
+    })
+
+    this.canvas.addEventListener('mousemove', (e) => {
+      if (!this.isTouching) return
+      const rect = this.canvas.getBoundingClientRect()
+      this.touchTarget = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      }
+    })
+
+    this.canvas.addEventListener('mouseup', () => {
+      this.isTouching = false
+      this.touchTarget = null
     })
   }
 
@@ -128,6 +188,9 @@ export class GameCore {
 
     // プレイヤー移動
     this.handlePlayerMovement(deltaTime)
+
+    // 自動射撃（スマホ対応）
+    this.playerShoot()
 
     // オブジェクト更新
     this.player.update(deltaTime, this.width, this.height)
@@ -164,16 +227,38 @@ export class GameCore {
     let dx = 0
     let dy = 0
 
-    if (this.keys.has('arrowleft') || this.keys.has('a')) dx -= 1
-    if (this.keys.has('arrowright') || this.keys.has('d')) dx += 1
-    if (this.keys.has('arrowup') || this.keys.has('w')) dy -= 1
-    if (this.keys.has('arrowdown') || this.keys.has('s')) dy += 1
+    // タッチ/マウス操作優先
+    if (this.touchTarget) {
+      const playerCenterX = this.player.x + this.player.width / 2
+      const playerCenterY = this.player.y + this.player.height / 2
+      
+      const targetDx = this.touchTarget.x - playerCenterX
+      const targetDy = this.touchTarget.y - playerCenterY
+      const distance = Math.sqrt(targetDx * targetDx + targetDy * targetDy)
 
-    // 正規化
-    if (dx !== 0 || dy !== 0) {
-      const length = Math.sqrt(dx * dx + dy * dy)
-      dx /= length
-      dy /= length
+      // 距離が近すぎる場合は移動しない
+      if (distance > 10) {
+        dx = targetDx / distance
+        dy = targetDy / distance
+
+        // スムーズな移動のため、距離に応じて速度調整
+        const speedMultiplier = Math.min(distance / 50, 1.5)
+        dx *= speedMultiplier
+        dy *= speedMultiplier
+      }
+    } else {
+      // キーボード操作
+      if (this.keys.has('arrowleft') || this.keys.has('a')) dx -= 1
+      if (this.keys.has('arrowright') || this.keys.has('d')) dx += 1
+      if (this.keys.has('arrowup') || this.keys.has('w')) dy -= 1
+      if (this.keys.has('arrowdown') || this.keys.has('s')) dy += 1
+
+      // 正規化
+      if (dx !== 0 || dy !== 0) {
+        const length = Math.sqrt(dx * dx + dy * dy)
+        dx /= length
+        dy /= length
+      }
     }
 
     this.player.move(dx, dy, this.width, this.height)

@@ -167,18 +167,44 @@ export default function ShootingGamePracticePage() {
               gap: '1rem'
             }}>
               <div style={{
+                background: '#8b5cf6',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                fontWeight: '700',
+                minWidth: '140px',
+                textAlign: 'center',
+                fontSize: '0.9rem'
+              }}>
+                📱 タップ/クリック
+              </div>
+              <div style={{ color: '#4a5568' }}>
+                <strong>移動:</strong> タップ/クリックした位置に自機が移動します（スマホ推奨）
+              </div>
+            </div>
+
+            <div style={{
+              background: 'white',
+              padding: '1rem',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
+              <div style={{
                 background: '#667eea',
                 color: 'white',
                 padding: '0.5rem 1rem',
                 borderRadius: '8px',
                 fontWeight: '700',
-                minWidth: '120px',
-                textAlign: 'center'
+                minWidth: '140px',
+                textAlign: 'center',
+                fontSize: '0.9rem'
               }}>
-                ↑↓←→ / WASD
+                ⌨️ ↑↓←→ / WASD
               </div>
               <div style={{ color: '#4a5568' }}>
-                <strong>移動:</strong> 自機を上下左右に動かします
+                <strong>移動:</strong> キーボードで上下左右に動かします（PC）
               </div>
             </div>
             
@@ -196,13 +222,14 @@ export default function ShootingGamePracticePage() {
                 padding: '0.5rem 1rem',
                 borderRadius: '8px',
                 fontWeight: '700',
-                minWidth: '120px',
-                textAlign: 'center'
+                minWidth: '140px',
+                textAlign: 'center',
+                fontSize: '0.9rem'
               }}>
-                スペース
+                🔫 自動射撃
               </div>
               <div style={{ color: '#4a5568' }}>
-                <strong>射撃:</strong> 弾を発射して敵を攻撃します
+                <strong>射撃:</strong> 弾は自動で発射されます！移動に集中しよう
               </div>
             </div>
           </div>

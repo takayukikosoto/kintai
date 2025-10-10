@@ -83,9 +83,10 @@ export default function ShootingGame({
           }}>
             <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>📋 操作方法</h2>
             <ul style={{ lineHeight: '2', fontSize: '1rem', paddingLeft: '1.5rem' }}>
-              <li><strong>移動:</strong> ↑↓←→ または WASD</li>
-              <li><strong>射撃:</strong> スペースキー</li>
-              <li><strong>目標:</strong> 敵を倒してスコアを稼ごう！</li>
+              <li><strong>📱 タッチ/クリック:</strong> タップした位置に移動（スマホ推奨）</li>
+              <li><strong>⌨️ キーボード:</strong> ↑↓←→ または WASD で移動（PC）</li>
+              <li><strong>🔫 射撃:</strong> 自動で弾が発射されます</li>
+              <li><strong>🎯 目標:</strong> 敵を倒してスコアを稼ごう！</li>
             </ul>
           </div>
 
