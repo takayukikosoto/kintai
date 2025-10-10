@@ -207,6 +207,15 @@ export class GameCore {
     // 衝突判定
     this.checkCollisions()
 
+    // ハンマーの位置をプレイヤーに追従
+    const hammer = this.bullets.find(b => b.isHammer && b.active)
+    if (hammer) {
+      hammer.updateHammerOrigin(
+        this.player.x + this.player.width / 2,
+        this.player.y + this.player.height / 2
+      )
+    }
+
     // 非アクティブなオブジェクトを削除
     this.bullets = this.bullets.filter(b => b.active)
     this.enemies = this.enemies.filter(e => e.active)
@@ -272,8 +281,8 @@ export class GameCore {
 
     // 武器タイプに応じて弾を発射
     switch (this.player.weaponType) {
-      case 'normal': {
-        const bulletType = this.bulletTypes.player_normal
+      case 'arrow': {
+        const bulletType = this.bulletTypes.player_arrow
         const bullet = new BulletObject(
           centerX - bulletType.size / 2,
           centerY,
@@ -282,15 +291,16 @@ export class GameCore {
           bulletType.damage,
           bulletType.color,
           bulletType.size,
-          true
+          true,
+          { penetrate: true }
         )
         this.bullets.push(bullet)
         break
       }
       
-      case 'spread': {
-        const bulletType = this.bulletTypes.player_spread
-        const angles = [-20, 0, 20]
+      case 'shotgun': {
+        const bulletType = this.bulletTypes.player_shotgun
+        const angles = [-30, -15, 0, 15, 30]
         angles.forEach(angle => {
           const rad = (angle * Math.PI) / 180
           const bullet = new BulletObject(
@@ -308,19 +318,49 @@ export class GameCore {
         break
       }
       
-      case 'rapid': {
-        const bulletType = this.bulletTypes.player_rapid
-        const bullet = new BulletObject(
-          centerX - bulletType.size / 2,
-          centerY,
-          0,
-          -bulletType.speed,
-          bulletType.damage,
-          bulletType.color,
-          bulletType.size,
-          true
-        )
-        this.bullets.push(bullet)
+      case 'boomerang': {
+        const bulletType = this.bulletTypes.player_boomerang
+        // 複数の円月輪を発射
+        for (let i = 0; i < 3; i++) {
+          const offsetX = (i - 1) * 20
+          const bullet = new BulletObject(
+            centerX + offsetX - bulletType.size / 2,
+            centerY,
+            0,
+            -bulletType.speed,
+            bulletType.damage,
+            bulletType.color,
+            bulletType.size,
+            true,
+            { bounce: true, bounceCount: 5 }
+          )
+          this.bullets.push(bullet)
+        }
+        break
+      }
+      
+      case 'hammer': {
+        const bulletType = this.bulletTypes.player_hammer
+        // ハンマーは1つだけ存在させる
+        const existingHammer = this.bullets.find(b => b.isHammer && b.active)
+        if (!existingHammer) {
+          const bullet = new BulletObject(
+            centerX,
+            centerY,
+            0,
+            0,
+            bulletType.damage,
+            bulletType.color,
+            bulletType.size,
+            true,
+            { 
+              isHammer: true,
+              hammerRadius: bulletType.orbitRadius,
+              hammerSpeed: bulletType.orbitSpeed
+            }
+          )
+          this.bullets.push(bullet)
+        }
         break
       }
     }
@@ -328,7 +368,7 @@ export class GameCore {
     this.player.shoot(this.gameTime)
   }
   
-  changeWeapon(weaponType: 'normal' | 'spread' | 'rapid') {
+  changeWeapon(weaponType: 'arrow' | 'shotgun' | 'boomerang' | 'hammer') {
     this.player.setWeapon(weaponType)
   }
 
@@ -419,7 +459,10 @@ export class GameCore {
         if (!enemy.active) return
 
         if (checkCollision(bullet, enemy)) {
-          bullet.active = false
+          // 貫通弾以外は当たったら消える
+          if (!bullet.penetrate) {
+            bullet.active = false
+          }
           const destroyed = enemy.takeDamage(bullet.damage)
           
           if (destroyed) {

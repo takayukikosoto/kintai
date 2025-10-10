@@ -8,7 +8,7 @@
     "dropRate": 0.15,
     "score": 100,
     "color": "#ef4444",
-    "size": 20
+    "size": 50
   },
   "zigzag": {
     "hp": 3,
@@ -19,7 +19,7 @@
     "dropRate": 0.2,
     "score": 200,
     "color": "#f97316",
-    "size": 25
+    "size": 55
   },
   "shooter": {
     "hp": 4,
@@ -30,7 +30,7 @@
     "dropRate": 0.25,
     "score": 300,
     "color": "#8b5cf6",
-    "size": 30
+    "size": 60
   },
   "fast": {
     "hp": 1,
@@ -41,7 +41,7 @@
     "dropRate": 0.1,
     "score": 150,
     "color": "#06b6d4",
-    "size": 18
+    "size": 45
   },
   "boss1": {
     "hp": 100,

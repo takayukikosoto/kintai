@@ -23,9 +23,9 @@ export default function ShootingGame({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gameRef = useRef<GameCore | null>(null)
   const [isStarted, setIsStarted] = useState(false)
-  const [weaponType, setWeaponType] = useState<'normal' | 'spread' | 'rapid'>('normal')
+  const [weaponType, setWeaponType] = useState<'arrow' | 'shotgun' | 'boomerang' | 'hammer'>('arrow')
   
-  const handleWeaponChange = (type: 'normal' | 'spread' | 'rapid') => {
+  const handleWeaponChange = (type: 'arrow' | 'shotgun' | 'boomerang' | 'hammer') => {
     setWeaponType(type)
     if (gameRef.current) {
       gameRef.current.changeWeapon(type)
@@ -323,63 +323,76 @@ export default function ShootingGame({
         {/* 武器選択ボタン */}
         <div style={{
           marginTop: '0.8rem',
-          display: 'flex',
-          gap: '0.5rem',
-          justifyContent: 'space-between',
-          overflowY: 'auto'
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '0.5rem'
         }}>
           <button
-            onClick={() => handleWeaponChange('normal')}
+            onClick={() => handleWeaponChange('arrow')}
             style={{
-              flex: 1,
               padding: '0.7rem 0.5rem',
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
               fontWeight: '700',
-              background: weaponType === 'normal' ? '#22c55e' : '#374151',
+              background: weaponType === 'arrow' ? '#8b4513' : '#374151',
               color: 'white',
-              border: weaponType === 'normal' ? '3px solid #fff' : 'none',
+              border: weaponType === 'arrow' ? '3px solid #fff' : 'none',
               borderRadius: '8px',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
-            🔫 通常弾
+            🏹 貫通矢
           </button>
           
           <button
-            onClick={() => handleWeaponChange('spread')}
+            onClick={() => handleWeaponChange('shotgun')}
             style={{
-              flex: 1,
               padding: '0.7rem 0.5rem',
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
               fontWeight: '700',
-              background: weaponType === 'spread' ? '#3b82f6' : '#374151',
+              background: weaponType === 'shotgun' ? '#f97316' : '#374151',
               color: 'white',
-              border: weaponType === 'spread' ? '3px solid #fff' : 'none',
+              border: weaponType === 'shotgun' ? '3px solid #fff' : 'none',
               borderRadius: '8px',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
-            ⚡ 拡散弾
+            💥 散弾銃
           </button>
           
           <button
-            onClick={() => handleWeaponChange('rapid')}
+            onClick={() => handleWeaponChange('boomerang')}
             style={{
-              flex: 1,
               padding: '0.7rem 0.5rem',
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
               fontWeight: '700',
-              background: weaponType === 'rapid' ? '#eab308' : '#374151',
+              background: weaponType === 'boomerang' ? '#3b82f6' : '#374151',
               color: 'white',
-              border: weaponType === 'rapid' ? '3px solid #fff' : 'none',
+              border: weaponType === 'boomerang' ? '3px solid #fff' : 'none',
               borderRadius: '8px',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
-            💥 連射弾
+            ⭕ 円月輪
+          </button>
+          
+          <button
+            onClick={() => handleWeaponChange('hammer')}
+            style={{
+              padding: '0.7rem 0.5rem',
+              fontSize: '0.8rem',
+              fontWeight: '700',
+              background: weaponType === 'hammer' ? '#6b7280' : '#374151',
+              color: 'white',
+              border: weaponType === 'hammer' ? '3px solid #fff' : 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            🔨 ハンマー
           </button>
         </div>
         

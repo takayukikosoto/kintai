@@ -2,7 +2,7 @@
   "stage": 1,
   "name": "ステージ1",
   "scrollSpeed": 1.5,
-  "duration": 60,
+  "duration": 180,
   "waves": [
     {
       "time": 2.0,

@@ -14,9 +14,14 @@ export interface GameObject {
 export interface BulletType {
   speed: number
   damage: number
-  pattern: 'straight' | 'spread' | 'aimed' | 'boomerang'
+  pattern: 'straight' | 'spread' | 'aimed' | 'boomerang' | 'orbit'
   spreadCount?: number
   spreadAngle?: number
+  penetrate?: boolean
+  bounce?: boolean
+  bounceCount?: number
+  orbitRadius?: number
+  orbitSpeed?: number
   color: string
   size: number
 }
@@ -65,7 +70,7 @@ export interface Player extends GameObject {
   lastShotTime: number
   invincible: boolean
   invincibleTime: number
-  weaponType: 'normal' | 'spread' | 'rapid'
+  weaponType: 'arrow' | 'shotgun' | 'boomerang' | 'hammer'
 }
 
 export interface Item extends GameObject {
