@@ -1,0 +1,76 @@
+{
+  "stage": 1,
+  "name": "ステージ1",
+  "scrollSpeed": 1.5,
+  "duration": 60,
+  "waves": [
+    {
+      "time": 2.0,
+      "enemies": [
+        {
+          "type": "small",
+          "count": 5,
+          "spawnXRange": [0.2, 0.8],
+          "interval": 0.3
+        }
+      ]
+    },
+    {
+      "time": 8.0,
+      "enemies": [
+        {
+          "type": "zigzag",
+          "count": 3,
+          "spawnXRange": [0.1, 0.9],
+          "interval": 0.5
+        }
+      ]
+    },
+    {
+      "time": 15.0,
+      "enemies": [
+        {
+          "type": "fast",
+          "count": 8,
+          "spawnXRange": [0.0, 1.0],
+          "interval": 0.2
+        }
+      ]
+    },
+    {
+      "time": 22.0,
+      "enemies": [
+        {
+          "type": "shooter",
+          "count": 4,
+          "spawnXRange": [0.2, 0.8],
+          "interval": 0.8
+        }
+      ]
+    },
+    {
+      "time": 30.0,
+      "enemies": [
+        {
+          "type": "small",
+          "count": 10,
+          "spawnXRange": [0.0, 1.0],
+          "interval": 0.2
+        },
+        {
+          "type": "zigzag",
+          "count": 3,
+          "spawnXRange": [0.1, 0.9],
+          "interval": 1.0
+        }
+      ]
+    },
+    {
+      "time": 45.0,
+      "boss": {
+        "type": "boss1",
+        "spawnX": 0.5
+      }
+    }
+  ]
+}

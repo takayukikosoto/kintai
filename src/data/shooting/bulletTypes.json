@@ -1,0 +1,46 @@
+{
+  "player_normal": {
+    "speed": 12,
+    "damage": 1,
+    "pattern": "straight",
+    "color": "#4ade80",
+    "size": 8
+  },
+  "player_spread": {
+    "speed": 10,
+    "damage": 1,
+    "pattern": "spread",
+    "spreadCount": 3,
+    "spreadAngle": 15,
+    "color": "#60a5fa",
+    "size": 6
+  },
+  "player_rapid": {
+    "speed": 15,
+    "damage": 1,
+    "pattern": "straight",
+    "color": "#fbbf24",
+    "size": 5
+  },
+  "enemy_normal": {
+    "speed": 5,
+    "damage": 1,
+    "pattern": "straight",
+    "color": "#ef4444",
+    "size": 6
+  },
+  "enemy_aimed": {
+    "speed": 4,
+    "damage": 1,
+    "pattern": "aimed",
+    "color": "#f97316",
+    "size": 7
+  },
+  "boss_shot": {
+    "speed": 6,
+    "damage": 2,
+    "pattern": "straight",
+    "color": "#a855f7",
+    "size": 10
+  }
+}

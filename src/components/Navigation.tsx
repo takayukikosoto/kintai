@@ -13,6 +13,7 @@ export default function Navigation({ userEmail, isAdmin, onSignOut }: Navigation
     { path: '/', label: '🏠 ホーム', icon: '🏠', adminOnly: false },
     { path: '/mypage', label: '👤 マイページ', icon: '👤', adminOnly: false },
     { path: '/slime-practice', label: '🎮 昼食ゲーム練習', icon: '🎮', adminOnly: false },
+    { path: '/shooting-practice', label: '🚀 シューティング練習', icon: '🚀', adminOnly: false },
     { path: '/admin-scanner', label: '📷 QRスキャナー', icon: '📷', adminOnly: false },
     { path: '/admin-continuous-scanner', label: '📹 連続スキャン', icon: '📹', adminOnly: true },
     { path: '/admin-lottery', label: '🎰 抽選設定', icon: '🎰', adminOnly: true },

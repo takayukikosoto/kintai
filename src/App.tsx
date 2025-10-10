@@ -7,6 +7,7 @@ import Navigation from './components/Navigation'
 import HomePage from './pages/HomePage'
 import MyPage from './pages/MyPage'
 import SlimeGamePracticePage from './pages/SlimeGamePracticePage'
+import ShootingGamePracticePage from './pages/ShootingGamePracticePage'
 import AdminScannerPage from './pages/AdminScannerPage'
 import AdminContinuousScannerPage from './pages/AdminContinuousScannerPage'
 import AdminLotteryPage from './pages/AdminLotteryPage'
@@ -166,6 +167,7 @@ export default function App() {
           <Route path="/" element={<HomePage userId={user.uid} defaultRate={defaultRate} isAdmin={isAdmin} />} />
           <Route path="/mypage" element={<MyPage userId={user.uid} userEmail={user.email || ''} onDefaultRateChange={setDefaultRate} />} />
           <Route path="/slime-practice" element={<SlimeGamePracticePage />} />
+          <Route path="/shooting-practice" element={<ShootingGamePracticePage />} />
           <Route path="/admin-scanner" element={<AdminScannerPage />} />
           <Route path="/admin-continuous-scanner" element={
             isAdmin ? <AdminContinuousScannerPage /> : <div className="card"><h2>⚠️ アクセス拒否</h2><p>このページは管理者専用です</p></div>

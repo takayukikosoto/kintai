@@ -1,0 +1,57 @@
+{
+  "small": {
+    "hp": 2,
+    "speed": 2,
+    "movementPattern": "straight",
+    "attackPattern": null,
+    "shootInterval": 0,
+    "dropRate": 0.15,
+    "score": 100,
+    "color": "#ef4444",
+    "size": 20
+  },
+  "zigzag": {
+    "hp": 3,
+    "speed": 1.5,
+    "movementPattern": "zigzag",
+    "attackPattern": null,
+    "shootInterval": 0,
+    "dropRate": 0.2,
+    "score": 200,
+    "color": "#f97316",
+    "size": 25
+  },
+  "shooter": {
+    "hp": 4,
+    "speed": 1.2,
+    "movementPattern": "slow",
+    "attackPattern": "shoot",
+    "shootInterval": 2.0,
+    "dropRate": 0.25,
+    "score": 300,
+    "color": "#8b5cf6",
+    "size": 30
+  },
+  "fast": {
+    "hp": 1,
+    "speed": 4,
+    "movementPattern": "straight",
+    "attackPattern": null,
+    "shootInterval": 0,
+    "dropRate": 0.1,
+    "score": 150,
+    "color": "#06b6d4",
+    "size": 18
+  },
+  "boss1": {
+    "hp": 100,
+    "speed": 0.5,
+    "movementPattern": "bossPatternA",
+    "attackPattern": "bossShots",
+    "shootInterval": 1.5,
+    "dropRate": 1.0,
+    "score": 5000,
+    "color": "#dc2626",
+    "size": 80
+  }
+}
