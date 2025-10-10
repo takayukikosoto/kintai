@@ -434,21 +434,50 @@ export class GameCore {
   }
 
   private render() {
+    // キャンバスをクリア
+    this.ctx.clearRect(0, 0, this.width, this.height)
+    
     // 背景
+    this.ctx.save()
     this.ctx.fillStyle = '#0f172a'
     this.ctx.fillRect(0, 0, this.width, this.height)
+    this.ctx.restore()
 
     // スクロール背景（星）
+    this.ctx.save()
     this.renderStarfield()
+    this.ctx.restore()
 
-    // ゲームオブジェクト
-    this.bullets.forEach(b => b.render(this.ctx))
+    // ゲームオブジェクト（レイヤー順に描画）
+    // 1. 敵の弾（最背面）
+    this.ctx.save()
+    this.bullets.filter(b => !b.isPlayerBullet).forEach(b => b.render(this.ctx))
+    this.ctx.restore()
+    
+    // 2. 敵機
+    this.ctx.save()
     this.enemies.forEach(e => e.render(this.ctx))
+    this.ctx.restore()
+    
+    // 3. アイテム
+    this.ctx.save()
     this.items.forEach(i => i.render(this.ctx))
+    this.ctx.restore()
+    
+    // 4. プレイヤーの弾
+    this.ctx.save()
+    this.bullets.filter(b => b.isPlayerBullet).forEach(b => b.render(this.ctx))
+    this.ctx.restore()
+    
+    // 5. プレイヤー機（最前面）
+    this.ctx.save()
     this.player.render(this.ctx)
+    this.ctx.restore()
 
-    // UI
+    // UI（常に最前面）
+    this.ctx.save()
     this.renderUI()
+    this.ctx.restore()
   }
 
   private renderStarfield() {
