@@ -13,8 +13,8 @@ interface ShootingGameProps {
 }
 
 export default function ShootingGame({
-  width = 600,
-  height = 800,
+  width = 400,
+  height = 600,
   difficulty = 'normal',
   onGameOver,
   onStageClear,
@@ -23,6 +23,14 @@ export default function ShootingGame({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gameRef = useRef<GameCore | null>(null)
   const [isStarted, setIsStarted] = useState(false)
+  const [weaponType, setWeaponType] = useState<'normal' | 'spread' | 'rapid'>('normal')
+  
+  const handleWeaponChange = (type: 'normal' | 'spread' | 'rapid') => {
+    setWeaponType(type)
+    if (gameRef.current) {
+      gameRef.current.changeWeapon(type)
+    }
+  }
 
   useEffect(() => {
     if (!canvasRef.current || !isStarted) return
@@ -285,14 +293,18 @@ export default function ShootingGame({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 9999
+        zIndex: 9999,
+        padding: '1rem',
+        overflowY: 'auto'
       }}
     >
       <div style={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '1rem',
+        padding: '0.8rem',
         borderRadius: '16px',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+        maxWidth: '100%',
+        overflowY: 'auto'
       }}>
         <canvas
           ref={canvasRef}
@@ -301,14 +313,80 @@ export default function ShootingGame({
           style={{
             display: 'block',
             borderRadius: '8px',
-            background: '#0f172a'
+            background: '#0f172a',
+            maxWidth: '100%',
+            height: 'auto',
+            touchAction: 'none'
           }}
         />
+        
+        {/* 武器選択ボタン */}
+        <div style={{
+          marginTop: '0.8rem',
+          display: 'flex',
+          gap: '0.5rem',
+          justifyContent: 'space-between',
+          overflowY: 'auto'
+        }}>
+          <button
+            onClick={() => handleWeaponChange('normal')}
+            style={{
+              flex: 1,
+              padding: '0.7rem 0.5rem',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              background: weaponType === 'normal' ? '#22c55e' : '#374151',
+              color: 'white',
+              border: weaponType === 'normal' ? '3px solid #fff' : 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            🔫 通常弾
+          </button>
+          
+          <button
+            onClick={() => handleWeaponChange('spread')}
+            style={{
+              flex: 1,
+              padding: '0.7rem 0.5rem',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              background: weaponType === 'spread' ? '#3b82f6' : '#374151',
+              color: 'white',
+              border: weaponType === 'spread' ? '3px solid #fff' : 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            ⚡ 拡散弾
+          </button>
+          
+          <button
+            onClick={() => handleWeaponChange('rapid')}
+            style={{
+              flex: 1,
+              padding: '0.7rem 0.5rem',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              background: weaponType === 'rapid' ? '#eab308' : '#374151',
+              color: 'white',
+              border: weaponType === 'rapid' ? '3px solid #fff' : 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            💥 連射弾
+          </button>
+        </div>
         
         <button
           onClick={onClose}
           style={{
-            marginTop: '1rem',
+            marginTop: '0.8rem',
             padding: '0.8rem 2rem',
             fontSize: '1rem',
             fontWeight: '700',
@@ -320,7 +398,7 @@ export default function ShootingGame({
             width: '100%'
           }}
         >
-          ✕ 終了
+          ✕ ゲーム終了
         </button>
       </div>
     </div>

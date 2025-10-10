@@ -244,41 +244,41 @@ export default function ShootingGamePracticePage() {
           border: '2px solid #f97316'
         }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1rem', color: '#c05621' }}>
-            👾 敵の種類
+            🧟 ゾンビの種類
           </h3>
           <div style={{ display: 'grid', gap: '0.8rem' }}>
             <div style={{ background: 'white', padding: '0.8rem', borderRadius: '8px' }}>
-              <strong style={{ color: '#ef4444' }}>🔴 小型機 (100点)</strong>
+              <strong style={{ color: '#22c55e' }}>🧟 基本ゾンビ (100点)</strong>
               <p style={{ color: '#4a5568', fontSize: '0.9rem', marginTop: '0.3rem', marginBottom: 0 }}>
-                まっすぐ下に降りてくる基本的な敵。HP: 2
+                まっすぐ降りてくる一般的なゾンビ。HP: 2
               </p>
             </div>
             
             <div style={{ background: 'white', padding: '0.8rem', borderRadius: '8px' }}>
-              <strong style={{ color: '#f97316' }}>🟠 ジグザグ機 (200点)</strong>
+              <strong style={{ color: '#ef4444' }}>🧛 吸血鬼ゾンビ (200点)</strong>
               <p style={{ color: '#4a5568', fontSize: '0.9rem', marginTop: '0.3rem', marginBottom: 0 }}>
-                左右に揺れながら降りてくる。HP: 3
+                左右にフラフラと揺れながら降りてくる。HP: 3
               </p>
             </div>
             
             <div style={{ background: 'white', padding: '0.8rem', borderRadius: '8px' }}>
-              <strong style={{ color: '#8b5cf6' }}>🟣 射撃機 (300点)</strong>
+              <strong style={{ color: '#8b5cf6' }}>👾 エイリアンゾンビ (300点)</strong>
               <p style={{ color: '#4a5568', fontSize: '0.9rem', marginTop: '0.3rem', marginBottom: 0 }}>
-                プレイヤーを狙って弾を撃ってくる。HP: 4
+                プレイヤーを狙って攻撃してくる重装甲型。HP: 4
               </p>
             </div>
             
             <div style={{ background: 'white', padding: '0.8rem', borderRadius: '8px' }}>
-              <strong style={{ color: '#06b6d4' }}>🔵 高速機 (150点)</strong>
+              <strong style={{ color: '#06b6d4' }}>👻 ゴーストゾンビ (150点)</strong>
               <p style={{ color: '#4a5568', fontSize: '0.9rem', marginTop: '0.3rem', marginBottom: 0 }}>
-                高速で突っ込んでくる。HP: 1
+                高速で襲いかかってくる幽霊型。HP: 1
               </p>
             </div>
             
             <div style={{ background: 'white', padding: '0.8rem', borderRadius: '8px', border: '2px solid #dc2626' }}>
-              <strong style={{ color: '#dc2626' }}>🔴 ボス (5000点)</strong>
+              <strong style={{ color: '#dc2626' }}>👑 ゾンビキング (5000点)</strong>
               <p style={{ color: '#4a5568', fontSize: '0.9rem', marginTop: '0.3rem', marginBottom: 0 }}>
-                大型の強敵。連続して弾を撃ってくる。HP: 100
+                王冠を被った巨大ボス。連続攻撃に注意！HP: 100
               </p>
             </div>
           </div>

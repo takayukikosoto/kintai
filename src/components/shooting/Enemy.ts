@@ -24,8 +24,9 @@ export class EnemyShip implements Enemy {
     this.type = type
     this.x = x
     this.y = y
-    this.width = typeData.size
-    this.height = typeData.size
+    // 当たり判定を1.8倍に拡大
+    this.width = typeData.size * 1.8
+    this.height = typeData.size * 1.8
     this.active = true
     this.hp = typeData.hp
     this.maxHp = typeData.hp
@@ -120,50 +121,60 @@ export class EnemyShip implements Enemy {
   }
 
   private renderBoss(ctx: CanvasRenderingContext2D, centerX: number, centerY: number) {
-    const size = this.width
+    const size = this.width / 1.8
     
-    // 外装グラデーション
-    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size / 2)
-    gradient.addColorStop(0, '#dc2626')
-    gradient.addColorStop(0.5, '#991b1b')
-    gradient.addColorStop(1, '#7f1d1d')
+    // ボスゾンビキング
+    const bodyGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size * 0.6)
+    bodyGradient.addColorStop(0, '#fca5a5')
+    bodyGradient.addColorStop(0.5, '#ef4444')
+    bodyGradient.addColorStop(1, '#dc2626')
     
-    // メイン機体
-    ctx.fillStyle = gradient
+    // 体（巨大）
+    ctx.fillStyle = bodyGradient
     ctx.strokeStyle = '#450a0a'
     ctx.lineWidth = 4
     
     ctx.beginPath()
-    ctx.moveTo(centerX, this.y + size * 0.2)
-    ctx.lineTo(this.x + size * 0.2, centerY)
-    ctx.lineTo(centerX, this.y + size * 0.8)
-    ctx.lineTo(this.x + size * 0.8, centerY)
-    ctx.closePath()
+    ctx.ellipse(centerX, centerY + size * 0.15, size * 0.6, size * 0.7, 0, 0, Math.PI * 2)
     ctx.fill()
     ctx.stroke()
 
-    // コア（中心）
-    const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size * 0.15)
-    coreGradient.addColorStop(0, '#fca5a5')
-    coreGradient.addColorStop(0.6, '#ef4444')
-    coreGradient.addColorStop(1, '#dc2626')
+    // 頭
+    const headGradient = ctx.createRadialGradient(centerX, centerY - size * 0.4, 0, centerX, centerY - size * 0.4, size * 0.4)
+    headGradient.addColorStop(0, '#fee2e2')
+    headGradient.addColorStop(0.8, '#fca5a5')
+    headGradient.addColorStop(1, '#f87171')
     
-    ctx.fillStyle = coreGradient
+    ctx.fillStyle = headGradient
     ctx.beginPath()
-    ctx.arc(centerX, centerY, size * 0.15, 0, Math.PI * 2)
+    ctx.arc(centerX, centerY - size * 0.4, size * 0.45, 0, Math.PI * 2)
     ctx.fill()
+    ctx.stroke()
     
-    // 装甲パネル
-    ctx.strokeStyle = '#7f1d1d'
+    // 王冠
+    ctx.fillStyle = '#fbbf24'
+    ctx.strokeStyle = '#92400e'
     ctx.lineWidth = 2
     ctx.beginPath()
-    ctx.moveTo(centerX, this.y + size * 0.3)
-    ctx.lineTo(centerX, this.y + size * 0.7)
+    ctx.moveTo(centerX - size * 0.4, centerY - size * 0.75)
+    ctx.lineTo(centerX - size * 0.3, centerY - size * 0.9)
+    ctx.lineTo(centerX - size * 0.15, centerY - size * 0.75)
+    ctx.lineTo(centerX, centerY - size * 0.95)
+    ctx.lineTo(centerX + size * 0.15, centerY - size * 0.75)
+    ctx.lineTo(centerX + size * 0.3, centerY - size * 0.9)
+    ctx.lineTo(centerX + size * 0.4, centerY - size * 0.75)
+    ctx.lineTo(centerX + size * 0.4, centerY - size * 0.65)
+    ctx.lineTo(centerX - size * 0.4, centerY - size * 0.65)
+    ctx.closePath()
+    ctx.fill()
     ctx.stroke()
-    ctx.beginPath()
-    ctx.moveTo(this.x + size * 0.3, centerY)
-    ctx.lineTo(this.x + size * 0.7, centerY)
-    ctx.stroke()
+    
+    // 絵文字オーバーレイ
+    ctx.font = `${size * 1.3}px Arial`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('👑', centerX, centerY - size * 0.8)
+    ctx.fillText('🧟‍♂️', centerX, centerY + size * 0.1)
 
     // HPバー
     const barWidth = this.width
@@ -195,133 +206,138 @@ export class EnemyShip implements Enemy {
   }
 
   private renderSmallEnemy(ctx: CanvasRenderingContext2D, centerX: number, centerY: number) {
-    const size = this.width / 2
+    const size = this.width / 3.6
     
-    // 機体グラデーション
-    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size)
-    gradient.addColorStop(0, '#f87171')
-    gradient.addColorStop(0.7, '#ef4444')
-    gradient.addColorStop(1, '#dc2626')
+    // ゾンビの体
+    const bodyGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size * 1.2)
+    bodyGradient.addColorStop(0, '#86efac')
+    bodyGradient.addColorStop(0.7, '#4ade80')
+    bodyGradient.addColorStop(1, '#22c55e')
     
-    ctx.fillStyle = gradient
-    ctx.strokeStyle = '#991b1b'
+    ctx.fillStyle = bodyGradient
+    ctx.strokeStyle = '#166534'
     ctx.lineWidth = 2
     
-    // 逆三角形
+    // 体（楕円）
     ctx.beginPath()
-    ctx.moveTo(centerX, centerY + size)
-    ctx.lineTo(centerX - size * 0.8, centerY - size * 0.5)
-    ctx.lineTo(centerX + size * 0.8, centerY - size * 0.5)
-    ctx.closePath()
+    ctx.ellipse(centerX, centerY + size * 0.3, size * 0.8, size * 1.0, 0, 0, Math.PI * 2)
     ctx.fill()
     ctx.stroke()
     
-    // コア
-    ctx.fillStyle = '#fca5a5'
+    // 頭
+    const headGradient = ctx.createRadialGradient(centerX, centerY - size * 0.5, 0, centerX, centerY - size * 0.5, size * 0.7)
+    headGradient.addColorStop(0, '#a7f3d0')
+    headGradient.addColorStop(0.8, '#6ee7b7')
+    headGradient.addColorStop(1, '#34d399')
+    
+    ctx.fillStyle = headGradient
     ctx.beginPath()
-    ctx.arc(centerX, centerY, size * 0.3, 0, Math.PI * 2)
+    ctx.arc(centerX, centerY - size * 0.5, size * 0.7, 0, Math.PI * 2)
     ctx.fill()
+    ctx.stroke()
+    
+    // 絵文字オーバーレイ
+    ctx.font = `${size * 2.5}px Arial`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('🧟', centerX, centerY)
   }
 
   private renderZigzagEnemy(ctx: CanvasRenderingContext2D, centerX: number, centerY: number) {
-    const size = this.width / 2
+    const size = this.width / 3.6
     
-    // 本体グラデーション
-    const gradient = ctx.createLinearGradient(centerX - size, centerY, centerX + size, centerY)
-    gradient.addColorStop(0, '#fb923c')
-    gradient.addColorStop(0.5, '#f97316')
-    gradient.addColorStop(1, '#ea580c')
+    // 吸血鬼ゾンビ
+    const bodyGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size * 1.2)
+    bodyGradient.addColorStop(0, '#fca5a5')
+    bodyGradient.addColorStop(0.7, '#f87171')
+    bodyGradient.addColorStop(1, '#ef4444')
     
-    // ウィング付き機体
-    ctx.fillStyle = gradient
-    ctx.strokeStyle = '#9a3412'
+    ctx.fillStyle = bodyGradient
+    ctx.strokeStyle = '#7f1d1d'
     ctx.lineWidth = 2
     
+    // 体
     ctx.beginPath()
-    ctx.moveTo(centerX, centerY - size * 0.8)
-    ctx.lineTo(centerX - size, centerY + size * 0.5)
-    ctx.lineTo(centerX, centerY + size * 0.3)
-    ctx.lineTo(centerX + size, centerY + size * 0.5)
-    ctx.closePath()
+    ctx.ellipse(centerX, centerY + size * 0.3, size * 0.9, size * 1.1, 0, 0, Math.PI * 2)
     ctx.fill()
     ctx.stroke()
     
-    // ウィング先端
-    ctx.fillStyle = '#fed7aa'
+    // 頭
+    ctx.fillStyle = '#fee2e2'
     ctx.beginPath()
-    ctx.arc(centerX - size, centerY + size * 0.5, size * 0.2, 0, Math.PI * 2)
+    ctx.arc(centerX, centerY - size * 0.5, size * 0.75, 0, Math.PI * 2)
     ctx.fill()
-    ctx.beginPath()
-    ctx.arc(centerX + size, centerY + size * 0.5, size * 0.2, 0, Math.PI * 2)
-    ctx.fill()
+    ctx.stroke()
+    
+    // 絵文字オーバーレイ
+    ctx.font = `${size * 2.5}px Arial`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('🧛', centerX, centerY)
   }
 
   private renderShooterEnemy(ctx: CanvasRenderingContext2D, centerX: number, centerY: number) {
-    const size = this.width / 2
+    const size = this.width / 3.6
     
-    // 重装甲機体
-    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size)
-    gradient.addColorStop(0, '#a78bfa')
-    gradient.addColorStop(0.6, '#8b5cf6')
-    gradient.addColorStop(1, '#7c3aed')
+    // フランケンシュタインゾンビ
+    const bodyGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size * 1.2)
+    bodyGradient.addColorStop(0, '#d8b4fe')
+    bodyGradient.addColorStop(0.7, '#c084fc')
+    bodyGradient.addColorStop(1, '#a855f7')
     
-    ctx.fillStyle = gradient
-    ctx.strokeStyle = '#5b21b6'
+    ctx.fillStyle = bodyGradient
+    ctx.strokeStyle = '#581c87'
     ctx.lineWidth = 2.5
     
-    // 六角形
+    // 体（大きめ）
     ctx.beginPath()
-    for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 3) * i - Math.PI / 2
-      const x = centerX + Math.cos(angle) * size
-      const y = centerY + Math.sin(angle) * size
-      if (i === 0) ctx.moveTo(x, y)
-      else ctx.lineTo(x, y)
+    ctx.ellipse(centerX, centerY + size * 0.3, size * 1.0, size * 1.2, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    
+    // 頭（四角っぽく）
+    ctx.fillStyle = '#e9d5ff'
+    ctx.fillRect(centerX - size * 0.7, centerY - size * 1.2, size * 1.4, size * 0.9)
+    ctx.strokeRect(centerX - size * 0.7, centerY - size * 1.2, size * 1.4, size * 0.9)
+    
+    // 絵文字オーバーレイ
+    ctx.font = `${size * 2.5}px Arial`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('👾', centerX, centerY)
+  }
+
+  private renderFastEnemy(ctx: CanvasRenderingContext2D, centerX: number, centerY: number) {
+    const size = this.width / 3.6
+    
+    // ゴーストゾンビ
+    const bodyGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size * 1.2)
+    bodyGradient.addColorStop(0, '#bae6fd')
+    bodyGradient.addColorStop(0.7, '#7dd3fc')
+    bodyGradient.addColorStop(1, '#38bdf8')
+    
+    ctx.fillStyle = bodyGradient
+    ctx.strokeStyle = '#0369a1'
+    ctx.lineWidth = 2
+    
+    // 体（波打つ形）
+    ctx.beginPath()
+    ctx.moveTo(centerX, centerY - size)
+    for (let i = 0; i <= 10; i++) {
+      const angle = (Math.PI / 10) * i
+      const wave = Math.sin(angle * 3) * size * 0.2
+      const x = centerX + Math.sin(angle) * (size * 0.8 + wave)
+      const y = centerY - Math.cos(angle) * size + size
+      ctx.lineTo(x, y)
     }
     ctx.closePath()
     ctx.fill()
     ctx.stroke()
     
-    // 砲台
-    ctx.fillStyle = '#6d28d9'
-    ctx.fillRect(centerX - size * 0.15, centerY + size * 0.3, size * 0.3, size * 0.6)
-    
-    // コア
-    ctx.fillStyle = '#e9d5ff'
-    ctx.beginPath()
-    ctx.arc(centerX, centerY, size * 0.35, 0, Math.PI * 2)
-    ctx.fill()
-  }
-
-  private renderFastEnemy(ctx: CanvasRenderingContext2D, centerX: number, centerY: number) {
-    const size = this.width / 2
-    
-    // 高速機グラデーション
-    const gradient = ctx.createLinearGradient(centerX, centerY - size, centerX, centerY + size)
-    gradient.addColorStop(0, '#67e8f9')
-    gradient.addColorStop(0.5, '#06b6d4')
-    gradient.addColorStop(1, '#0891b2')
-    
-    ctx.fillStyle = gradient
-    ctx.strokeStyle = '#155e75'
-    ctx.lineWidth = 2
-    
-    // 流線型
-    ctx.beginPath()
-    ctx.moveTo(centerX, centerY + size)
-    ctx.quadraticCurveTo(centerX - size * 0.6, centerY, centerX - size * 0.4, centerY - size)
-    ctx.lineTo(centerX + size * 0.4, centerY - size)
-    ctx.quadraticCurveTo(centerX + size * 0.6, centerY, centerX, centerY + size)
-    ctx.closePath()
-    ctx.fill()
-    ctx.stroke()
-    
-    // スピードライン
-    ctx.strokeStyle = '#a5f3fc'
-    ctx.lineWidth = 1.5
-    ctx.beginPath()
-    ctx.moveTo(centerX, centerY - size * 0.5)
-    ctx.lineTo(centerX, centerY + size * 0.5)
-    ctx.stroke()
+    // 絵文字オーバーレイ
+    ctx.font = `${size * 2.5}px Arial`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('👻', centerX, centerY)
   }
 }

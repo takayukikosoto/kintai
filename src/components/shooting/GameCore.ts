@@ -267,23 +267,69 @@ export class GameCore {
   private playerShoot() {
     if (!this.player.canShoot(this.gameTime)) return
 
-    const bulletType = this.bulletTypes.player_normal
     const centerX = this.player.x + this.player.width / 2
     const centerY = this.player.y
 
-    const bullet = new BulletObject(
-      centerX - bulletType.size / 2,
-      centerY,
-      0,
-      -bulletType.speed,
-      bulletType.damage,
-      bulletType.color,
-      bulletType.size,
-      true
-    )
+    // 武器タイプに応じて弾を発射
+    switch (this.player.weaponType) {
+      case 'normal': {
+        const bulletType = this.bulletTypes.player_normal
+        const bullet = new BulletObject(
+          centerX - bulletType.size / 2,
+          centerY,
+          0,
+          -bulletType.speed,
+          bulletType.damage,
+          bulletType.color,
+          bulletType.size,
+          true
+        )
+        this.bullets.push(bullet)
+        break
+      }
+      
+      case 'spread': {
+        const bulletType = this.bulletTypes.player_spread
+        const angles = [-20, 0, 20]
+        angles.forEach(angle => {
+          const rad = (angle * Math.PI) / 180
+          const bullet = new BulletObject(
+            centerX - bulletType.size / 2,
+            centerY,
+            Math.sin(rad) * bulletType.speed,
+            -Math.cos(rad) * bulletType.speed,
+            bulletType.damage,
+            bulletType.color,
+            bulletType.size,
+            true
+          )
+          this.bullets.push(bullet)
+        })
+        break
+      }
+      
+      case 'rapid': {
+        const bulletType = this.bulletTypes.player_rapid
+        const bullet = new BulletObject(
+          centerX - bulletType.size / 2,
+          centerY,
+          0,
+          -bulletType.speed,
+          bulletType.damage,
+          bulletType.color,
+          bulletType.size,
+          true
+        )
+        this.bullets.push(bullet)
+        break
+      }
+    }
 
-    this.bullets.push(bullet)
     this.player.shoot(this.gameTime)
+  }
+  
+  changeWeapon(weaponType: 'normal' | 'spread' | 'rapid') {
+    this.player.setWeapon(weaponType)
   }
 
   private spawnWaves() {
@@ -538,6 +584,10 @@ export class GameCore {
         nextStage: this.stageData.stage + 1
       })
     }
+  }
+
+  getPlayer() {
+    return this.player
   }
 
   cleanup() {

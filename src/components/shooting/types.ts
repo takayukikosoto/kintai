@@ -65,6 +65,7 @@ export interface Player extends GameObject {
   lastShotTime: number
   invincible: boolean
   invincibleTime: number
+  weaponType: 'normal' | 'spread' | 'rapid'
 }
 
 export interface Item extends GameObject {
