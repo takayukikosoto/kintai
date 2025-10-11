@@ -23,9 +23,9 @@ export default function ShootingGame({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gameRef = useRef<GameCore | null>(null)
   const [isStarted, setIsStarted] = useState(false)
-  const [weaponType, setWeaponType] = useState<'arrow' | 'shotgun' | 'boomerang' | 'hammer'>('arrow')
+  const [weaponType, setWeaponType] = useState<'arrow' | 'boomerang' | 'hammer'>('arrow')
   
-  const handleWeaponChange = (type: 'arrow' | 'shotgun' | 'boomerang' | 'hammer') => {
+  const handleWeaponChange = (type: 'arrow' | 'boomerang' | 'hammer') => {
     setWeaponType(type)
     if (gameRef.current) {
       gameRef.current.changeWeapon(type)
@@ -323,15 +323,16 @@ export default function ShootingGame({
         {/* 武器選択ボタン */}
         <div style={{
           marginTop: '0.8rem',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '0.5rem'
+          display: 'flex',
+          gap: '0.5rem',
+          justifyContent: 'space-between'
         }}>
           <button
             onClick={() => handleWeaponChange('arrow')}
             style={{
-              padding: '0.7rem 0.5rem',
-              fontSize: '0.8rem',
+              flex: 1,
+              padding: '0.8rem 0.5rem',
+              fontSize: '0.85rem',
               fontWeight: '700',
               background: weaponType === 'arrow' ? '#8b4513' : '#374151',
               color: 'white',
@@ -345,27 +346,11 @@ export default function ShootingGame({
           </button>
           
           <button
-            onClick={() => handleWeaponChange('shotgun')}
-            style={{
-              padding: '0.7rem 0.5rem',
-              fontSize: '0.8rem',
-              fontWeight: '700',
-              background: weaponType === 'shotgun' ? '#f97316' : '#374151',
-              color: 'white',
-              border: weaponType === 'shotgun' ? '3px solid #fff' : 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            💥 散弾銃
-          </button>
-          
-          <button
             onClick={() => handleWeaponChange('boomerang')}
             style={{
-              padding: '0.7rem 0.5rem',
-              fontSize: '0.8rem',
+              flex: 1,
+              padding: '0.8rem 0.5rem',
+              fontSize: '0.85rem',
               fontWeight: '700',
               background: weaponType === 'boomerang' ? '#3b82f6' : '#374151',
               color: 'white',
@@ -375,14 +360,15 @@ export default function ShootingGame({
               transition: 'all 0.2s'
             }}
           >
-            ⭕ 円月輪
+            🪃 ブーメラン
           </button>
           
           <button
             onClick={() => handleWeaponChange('hammer')}
             style={{
-              padding: '0.7rem 0.5rem',
-              fontSize: '0.8rem',
+              flex: 1,
+              padding: '0.8rem 0.5rem',
+              fontSize: '0.85rem',
               fontWeight: '700',
               background: weaponType === 'hammer' ? '#6b7280' : '#374151',
               color: 'white',

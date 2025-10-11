@@ -13,7 +13,7 @@ export class PlayerShip implements Player {
   lastShotTime: number
   invincible: boolean
   invincibleTime: number
-  weaponType: 'arrow' | 'shotgun' | 'boomerang' | 'hammer'
+  weaponType: 'arrow' | 'boomerang' | 'hammer'
 
   constructor(canvasWidth: number, canvasHeight: number) {
     this.width = 30
@@ -31,18 +31,15 @@ export class PlayerShip implements Player {
     this.weaponType = 'arrow'
   }
   
-  setWeapon(type: 'arrow' | 'shotgun' | 'boomerang' | 'hammer') {
+  setWeapon(type: 'arrow' | 'boomerang' | 'hammer') {
     this.weaponType = type
     // 武器によってクールダウン変更
     switch (type) {
       case 'arrow':
         this.shootCooldown = 0.25
         break
-      case 'shotgun':
-        this.shootCooldown = 0.4
-        break
       case 'boomerang':
-        this.shootCooldown = 0.5
+        this.shootCooldown = 1.0
         break
       case 'hammer':
         this.shootCooldown = 0.1

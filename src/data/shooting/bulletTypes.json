@@ -7,23 +7,12 @@
     "color": "#8b4513",
     "size": 12
   },
-  "player_shotgun": {
-    "speed": 10,
-    "damage": 1,
-    "pattern": "spread",
-    "spreadCount": 5,
-    "spreadAngle": 25,
-    "color": "#f97316",
-    "size": 6
-  },
   "player_boomerang": {
     "speed": 8,
-    "damage": 0.7,
+    "damage": 1.5,
     "pattern": "straight",
-    "bounce": true,
-    "bounceCount": 5,
     "color": "#3b82f6",
-    "size": 10
+    "size": 14
   },
   "player_hammer": {
     "speed": 0,

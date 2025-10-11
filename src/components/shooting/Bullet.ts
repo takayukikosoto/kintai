@@ -21,6 +21,14 @@ export class BulletObject implements Bullet {
   hammerSpeed: number
   hammerOriginX: number
   hammerOriginY: number
+  hammerBaseRadius: number
+  isBoomerang: boolean
+  boomerangState: 'outward' | 'return'
+  boomerangTime: number
+  boomerangStartX: number
+  boomerangStartY: number
+  boomerangTargetX: number
+  boomerangTargetY: number
 
   constructor(
     x: number,
@@ -38,6 +46,9 @@ export class BulletObject implements Bullet {
       isHammer?: boolean
       hammerRadius?: number
       hammerSpeed?: number
+      isBoomerang?: boolean
+      boomerangTargetX?: number
+      boomerangTargetY?: number
     }
   ) {
     this.x = x
@@ -57,17 +68,67 @@ export class BulletObject implements Bullet {
     this.isHammer = options?.isHammer || false
     this.hammerAngle = 0
     this.hammerRadius = options?.hammerRadius || 60
+    this.hammerBaseRadius = options?.hammerRadius || 60
     this.hammerSpeed = options?.hammerSpeed || 0.1
     this.hammerOriginX = x
     this.hammerOriginY = y
+    this.isBoomerang = options?.isBoomerang || false
+    this.boomerangState = 'outward'
+    this.boomerangTime = 0
+    this.boomerangStartX = x
+    this.boomerangStartY = y
+    this.boomerangTargetX = options?.boomerangTargetX || x
+    this.boomerangTargetY = options?.boomerangTargetY || 0
   }
 
   update(deltaTime: number, canvasWidth: number, canvasHeight: number) {
     if (this.isHammer) {
-      // ハンマーは円軌道で回転
+      // ハンマーはびよんびよんと伸縮しながら回転
       this.hammerAngle += this.hammerSpeed
+      // sin波で半径を伸縮（0.5倍〜1.5倍）
+      const stretchFactor = 1.0 + Math.sin(this.hammerAngle * 3) * 0.5
+      this.hammerRadius = this.hammerBaseRadius * stretchFactor
       this.x = this.hammerOriginX + Math.cos(this.hammerAngle) * this.hammerRadius
       this.y = this.hammerOriginY + Math.sin(this.hammerAngle) * this.hammerRadius
+      return
+    }
+
+    if (this.isBoomerang) {
+      // ブーメラン挙動
+      this.boomerangTime += deltaTime
+
+      if (this.boomerangState === 'outward') {
+        // 外に向かう（2秒間）
+        const progress = Math.min(this.boomerangTime / 2.0, 1)
+        const easeProgress = 1 - Math.pow(1 - progress, 3) // easeOutCubic
+        
+        this.x = this.boomerangStartX + (this.boomerangTargetX - this.boomerangStartX) * easeProgress
+        this.y = this.boomerangStartY + (this.boomerangTargetY - this.boomerangStartY) * easeProgress
+        
+        // ゆらゆら揺れる
+        const wobble = Math.sin(this.boomerangTime * 8) * 20
+        this.x += wobble
+        
+        if (this.boomerangTime >= 2.0) {
+          this.boomerangState = 'return'
+          this.boomerangTime = 0
+        }
+      } else {
+        // 寂しげに帰ってくる（1.5秒間）
+        const progress = Math.min(this.boomerangTime / 1.5, 1)
+        const easeProgress = progress * progress // easeInQuad
+        
+        this.x = this.boomerangTargetX + (this.boomerangStartX - this.boomerangTargetX) * easeProgress
+        this.y = this.boomerangTargetY + (this.boomerangStartY - this.boomerangTargetY) * easeProgress
+        
+        // 帰りもゆらゆら
+        const wobble = Math.sin(this.boomerangTime * 6) * 15
+        this.x += wobble
+        
+        if (this.boomerangTime >= 1.5) {
+          this.active = false
+        }
+      }
       return
     }
 
@@ -153,8 +214,8 @@ export class BulletObject implements Bullet {
       ctx.fillStyle = '#dc2626'
       ctx.fillRect(-this.width / 2, -this.height / 4, this.width / 3, this.height / 2)
       
-    } else if (this.bounce) {
-      // 円月輪
+    } else if (this.isBoomerang) {
+      // ブーメラン（円月輪）
       const centerX = this.x + this.width / 2
       const centerY = this.y + this.height / 2
       const time = Date.now() / 100

@@ -298,44 +298,43 @@ export class GameCore {
         break
       }
       
-      case 'shotgun': {
-        const bulletType = this.bulletTypes.player_shotgun
-        const angles = [-30, -15, 0, 15, 30]
-        angles.forEach(angle => {
-          const rad = (angle * Math.PI) / 180
-          const bullet = new BulletObject(
-            centerX - bulletType.size / 2,
-            centerY,
-            Math.sin(rad) * bulletType.speed,
-            -Math.cos(rad) * bulletType.speed,
-            bulletType.damage,
-            bulletType.color,
-            bulletType.size,
-            true
-          )
-          this.bullets.push(bullet)
-        })
-        break
-      }
-      
       case 'boomerang': {
         const bulletType = this.bulletTypes.player_boomerang
-        // 複数の円月輪を発射
-        for (let i = 0; i < 3; i++) {
-          const offsetX = (i - 1) * 20
-          const bullet = new BulletObject(
-            centerX + offsetX - bulletType.size / 2,
-            centerY,
-            0,
-            -bulletType.speed,
-            bulletType.damage,
-            bulletType.color,
-            bulletType.size,
-            true,
-            { bounce: true, bounceCount: 5 }
-          )
-          this.bullets.push(bullet)
-        }
+        // 最も近い敵を探す
+        let closestEnemy: any = null
+        let closestDist = Infinity
+        
+        this.enemies.forEach(enemy => {
+          if (!enemy.active) return
+          const dx = enemy.x - centerX
+          const dy = enemy.y - centerY
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < closestDist) {
+            closestDist = dist
+            closestEnemy = enemy
+          }
+        })
+        
+        // ターゲット位置を設定（敵がいなければ画面上部中央）
+        const targetX = closestEnemy ? (closestEnemy.x + closestEnemy.width / 2) : this.width / 2
+        const targetY = closestEnemy ? closestEnemy.y : this.height * 0.2
+        
+        const bullet = new BulletObject(
+          centerX - bulletType.size / 2,
+          centerY,
+          0,
+          0,
+          bulletType.damage,
+          bulletType.color,
+          bulletType.size,
+          true,
+          { 
+            isBoomerang: true,
+            boomerangTargetX: targetX,
+            boomerangTargetY: targetY
+          }
+        )
+        this.bullets.push(bullet)
         break
       }
       
@@ -368,7 +367,7 @@ export class GameCore {
     this.player.shoot(this.gameTime)
   }
   
-  changeWeapon(weaponType: 'arrow' | 'shotgun' | 'boomerang' | 'hammer') {
+  changeWeapon(weaponType: 'arrow' | 'boomerang' | 'hammer') {
     this.player.setWeapon(weaponType)
   }
 

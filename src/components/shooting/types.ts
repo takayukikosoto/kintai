@@ -70,7 +70,7 @@ export interface Player extends GameObject {
   lastShotTime: number
   invincible: boolean
   invincibleTime: number
-  weaponType: 'arrow' | 'shotgun' | 'boomerang' | 'hammer'
+  weaponType: 'arrow' | 'boomerang' | 'hammer'
 }
 
 export interface Item extends GameObject {

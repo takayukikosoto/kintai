@@ -102,10 +102,10 @@ export class EnemyShip implements Enemy {
     
     const centerX = this.x + this.width / 2
     const centerY = this.y + this.height / 2
-    const isBoss = this.type.includes('boss')
 
-    if (isBoss) {
-      // ボス機体
+    if (this.type === 'finalboss') {
+      this.renderFinalBoss(ctx, centerX, centerY)
+    } else if (this.type === 'boss1') {
       this.renderBoss(ctx, centerX, centerY)
     } else if (this.type === 'small') {
       this.renderSmallEnemy(ctx, centerX, centerY)
@@ -339,5 +339,134 @@ export class EnemyShip implements Enemy {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText('👻', centerX, centerY)
+  }
+
+  private renderFinalBoss(ctx: CanvasRenderingContext2D, centerX: number, centerY: number) {
+    const size = this.width / 1.5
+    const time = Date.now() / 200
+    
+    // 邪悪なオーラ（パルス）
+    const pulseSize = size * (1.0 + Math.sin(time) * 0.15)
+    const auraGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseSize)
+    auraGradient.addColorStop(0, 'rgba(127, 29, 29, 0.8)')
+    auraGradient.addColorStop(0.5, 'rgba(127, 29, 29, 0.4)')
+    auraGradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    
+    ctx.fillStyle = auraGradient
+    ctx.beginPath()
+    ctx.arc(centerX, centerY, pulseSize, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // 巨大な体（不気味なグラデーション）
+    const bodyGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size * 0.8)
+    bodyGradient.addColorStop(0, '#450a0a')
+    bodyGradient.addColorStop(0.5, '#7f1d1d')
+    bodyGradient.addColorStop(1, '#450a0a')
+    
+    ctx.fillStyle = bodyGradient
+    ctx.strokeStyle = '#000000'
+    ctx.lineWidth = 5
+    
+    ctx.beginPath()
+    ctx.ellipse(centerX, centerY + size * 0.2, size * 0.9, size * 1.0, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+
+    // 頭部（巨大で不気味）
+    const headGradient = ctx.createRadialGradient(centerX, centerY - size * 0.5, 0, centerX, centerY - size * 0.5, size * 0.6)
+    headGradient.addColorStop(0, '#1a1a1a')
+    headGradient.addColorStop(0.7, '#450a0a')
+    headGradient.addColorStop(1, '#7f1d1d')
+    
+    ctx.fillStyle = headGradient
+    ctx.beginPath()
+    ctx.arc(centerX, centerY - size * 0.5, size * 0.65, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    
+    // 悪魔の角
+    ctx.fillStyle = '#1a1a1a'
+    ctx.strokeStyle = '#000000'
+    ctx.lineWidth = 3
+    
+    // 左の角
+    ctx.beginPath()
+    ctx.moveTo(centerX - size * 0.5, centerY - size * 0.9)
+    ctx.quadraticCurveTo(centerX - size * 0.6, centerY - size * 1.3, centerX - size * 0.4, centerY - size * 1.2)
+    ctx.lineTo(centerX - size * 0.45, centerY - size * 0.95)
+    ctx.closePath()
+    ctx.fill()
+    ctx.stroke()
+    
+    // 右の角
+    ctx.beginPath()
+    ctx.moveTo(centerX + size * 0.5, centerY - size * 0.9)
+    ctx.quadraticCurveTo(centerX + size * 0.6, centerY - size * 1.3, centerX + size * 0.4, centerY - size * 1.2)
+    ctx.lineTo(centerX + size * 0.45, centerY - size * 0.95)
+    ctx.closePath()
+    ctx.fill()
+    ctx.stroke()
+    
+    // 赤く光る目
+    ctx.fillStyle = '#ff0000'
+    ctx.shadowColor = '#ff0000'
+    ctx.shadowBlur = 20
+    
+    ctx.beginPath()
+    ctx.arc(centerX - size * 0.25, centerY - size * 0.6, size * 0.12, 0, Math.PI * 2)
+    ctx.fill()
+    
+    ctx.beginPath()
+    ctx.arc(centerX + size * 0.25, centerY - size * 0.6, size * 0.12, 0, Math.PI * 2)
+    ctx.fill()
+    
+    ctx.shadowBlur = 0
+    
+    // 王冠（邪悪な王の証）
+    ctx.fillStyle = '#fbbf24'
+    ctx.strokeStyle = '#92400e'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(centerX - size * 0.55, centerY - size * 1.0)
+    ctx.lineTo(centerX - size * 0.4, centerY - size * 1.2)
+    ctx.lineTo(centerX - size * 0.25, centerY - size * 1.0)
+    ctx.lineTo(centerX, centerY - size * 1.3)
+    ctx.lineTo(centerX + size * 0.25, centerY - size * 1.0)
+    ctx.lineTo(centerX + size * 0.4, centerY - size * 1.2)
+    ctx.lineTo(centerX + size * 0.55, centerY - size * 1.0)
+    ctx.lineTo(centerX + size * 0.55, centerY - size * 0.85)
+    ctx.lineTo(centerX - size * 0.55, centerY - size * 0.85)
+    ctx.closePath()
+    ctx.fill()
+    ctx.stroke()
+    
+    // 絵文字オーバーレイ（超怖い）
+    ctx.font = `${size * 1.5}px Arial`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('👑', centerX, centerY - size * 1.05)
+    ctx.fillText('💀', centerX, centerY - size * 0.4)
+    ctx.fillText('🔥', centerX - size * 0.8, centerY + size * 0.3)
+    ctx.fillText('🔥', centerX + size * 0.8, centerY + size * 0.3)
+
+    // HPバー
+    const barWidth = this.width
+    const barHeight = 10
+    const barY = this.y - 20
+
+    ctx.fillStyle = '#1f2937'
+    ctx.fillRect(this.x, barY, barWidth, barHeight)
+    
+    ctx.strokeStyle = '#374151'
+    ctx.lineWidth = 2
+    ctx.strokeRect(this.x, barY, barWidth, barHeight)
+
+    const hpPercent = this.hp / this.maxHp
+    const hpGradient = ctx.createLinearGradient(this.x, barY, this.x + barWidth * hpPercent, barY)
+    hpGradient.addColorStop(0, '#ef4444')
+    hpGradient.addColorStop(1, '#dc2626')
+
+    ctx.fillStyle = hpGradient
+    ctx.fillRect(this.x, barY, barWidth * hpPercent, barHeight)
   }
 }

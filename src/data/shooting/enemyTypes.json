@@ -53,5 +53,16 @@
     "score": 5000,
     "color": "#dc2626",
     "size": 80
+  },
+  "finalboss": {
+    "hp": 300,
+    "speed": 0.8,
+    "movementPattern": "bossPatternA",
+    "attackPattern": "bossShots",
+    "shootInterval": 1.0,
+    "dropRate": 1.0,
+    "score": 20000,
+    "color": "#7f1d1d",
+    "size": 100
   }
 }
