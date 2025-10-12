@@ -467,6 +467,13 @@ export class GameCore {
           if (destroyed) {
             this.score += enemy.score
 
+            // ラスボスを倒したらステージクリア
+            if (enemy.type === 'finalboss') {
+              setTimeout(() => {
+                this.stageClear()
+              }, 100)
+            }
+
             // アイテムドロップ
             if (Math.random() < enemy.dropRate) {
               const itemType = Math.random() < 0.7 ? 'score' : 'health'

@@ -83,10 +83,10 @@ export class BulletObject implements Bullet {
 
   update(deltaTime: number, canvasWidth: number, canvasHeight: number) {
     if (this.isHammer) {
-      // ハンマーはびよんびよんと伸縮しながら回転
+      // モーニングスターはびよんびよんと大きく伸縮しながら回転
       this.hammerAngle += this.hammerSpeed
-      // sin波で半径を伸縮（0.5倍〜1.5倍）
-      const stretchFactor = 1.0 + Math.sin(this.hammerAngle * 3) * 0.5
+      // sin波で半径を大きく伸縮（0.3倍〜2.0倍）
+      const stretchFactor = 1.15 + Math.sin(this.hammerAngle * 2.5) * 0.85
       this.hammerRadius = this.hammerBaseRadius * stretchFactor
       this.x = this.hammerOriginX + Math.cos(this.hammerAngle) * this.hammerRadius
       this.y = this.hammerOriginY + Math.sin(this.hammerAngle) * this.hammerRadius
@@ -174,25 +174,76 @@ export class BulletObject implements Bullet {
     ctx.save()
     
     if (this.isHammer) {
-      // ハンマー描画
+      // モーニングスター描画
       const centerX = this.x + this.width / 2
       const centerY = this.y + this.height / 2
       
-      // 鎖
-      ctx.strokeStyle = '#4b5563'
-      ctx.lineWidth = 3
-      ctx.beginPath()
-      ctx.moveTo(this.hammerOriginX, this.hammerOriginY)
-      ctx.lineTo(centerX, centerY)
-      ctx.stroke()
+      // 鎖（複数のリング）
+      const chainSegments = 8
+      const dx = centerX - this.hammerOriginX
+      const dy = centerY - this.hammerOriginY
       
-      // ハンマーヘッド
-      ctx.fillStyle = this.color
+      for (let i = 0; i < chainSegments; i++) {
+        const t = i / chainSegments
+        const x = this.hammerOriginX + dx * t
+        const y = this.hammerOriginY + dy * t
+        
+        ctx.strokeStyle = '#374151'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(x, y, 3, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+      
+      // 鉄球本体
+      const ballRadius = this.width / 2
+      const gradient = ctx.createRadialGradient(
+        centerX - ballRadius / 3,
+        centerY - ballRadius / 3,
+        0,
+        centerX,
+        centerY,
+        ballRadius
+      )
+      gradient.addColorStop(0, '#9ca3af')
+      gradient.addColorStop(0.7, '#6b7280')
+      gradient.addColorStop(1, '#374151')
+      
+      ctx.fillStyle = gradient
       ctx.beginPath()
-      ctx.arc(centerX, centerY, this.width / 2, 0, Math.PI * 2)
+      ctx.arc(centerX, centerY, ballRadius, 0, Math.PI * 2)
       ctx.fill()
+      
+      // 棘（8方向）
+      const spikeCount = 8
+      for (let i = 0; i < spikeCount; i++) {
+        const angle = (Math.PI * 2 * i) / spikeCount
+        const spikeLength = ballRadius * 0.6
+        const baseX = centerX + Math.cos(angle) * ballRadius * 0.7
+        const baseY = centerY + Math.sin(angle) * ballRadius * 0.7
+        const tipX = centerX + Math.cos(angle) * (ballRadius + spikeLength)
+        const tipY = centerY + Math.sin(angle) * (ballRadius + spikeLength)
+        
+        ctx.fillStyle = '#1f2937'
+        ctx.beginPath()
+        ctx.moveTo(tipX, tipY)
+        ctx.lineTo(
+          baseX + Math.cos(angle + Math.PI / 2) * 3,
+          baseY + Math.sin(angle + Math.PI / 2) * 3
+        )
+        ctx.lineTo(
+          baseX + Math.cos(angle - Math.PI / 2) * 3,
+          baseY + Math.sin(angle - Math.PI / 2) * 3
+        )
+        ctx.closePath()
+        ctx.fill()
+      }
+      
+      // 鉄球のアウトライン
       ctx.strokeStyle = '#1f2937'
       ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(centerX, centerY, ballRadius, 0, Math.PI * 2)
       ctx.stroke()
       
     } else if (this.penetrate) {

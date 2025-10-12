@@ -73,7 +73,28 @@
       }
     },
     {
-      "time": 120.0,
+      "time": 70.0,
+      "boss": {
+        "type": "boss1",
+        "spawnX": 0.3
+      }
+    },
+    {
+      "time": 90.0,
+      "boss": {
+        "type": "boss1",
+        "spawnX": 0.7
+      }
+    },
+    {
+      "time": 110.0,
+      "boss": {
+        "type": "boss1",
+        "spawnX": 0.5
+      }
+    },
+    {
+      "time": 130.0,
       "boss": {
         "type": "finalboss",
         "spawnX": 0.5

@@ -55,7 +55,7 @@
     "size": 80
   },
   "finalboss": {
-    "hp": 300,
+    "hp": 3000,
     "speed": 0.8,
     "movementPattern": "bossPatternA",
     "attackPattern": "bossShots",

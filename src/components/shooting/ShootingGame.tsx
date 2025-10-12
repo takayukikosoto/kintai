@@ -378,7 +378,7 @@ export default function ShootingGame({
               transition: 'all 0.2s'
             }}
           >
-            🔨 ハンマー
+            ⛓️ モーニングスター
           </button>
         </div>
         
